@@ -48,6 +48,10 @@ port-kill: ## Kill any process occupying the configured port ($(PORT))
 upload: ## Upload local images to Cloudinary (make upload [DIR=./my-images])
 	$(NODE) scripts/upload-to-cloudinary.js $(DIR)
 
+.PHONY: build
+build: ## Build Docker image
+	docker build -t deo-gratias-catalog .
+
 .PHONY: docker-up
 docker-up: ## Start server with Docker Compose
 	docker compose up -d --build
@@ -183,6 +187,10 @@ help: ## Show this help message
 	@echo ""
 	@echo "  make pdf            Generate PDF catalog (no server needed)"
 	@echo "  make upload         Upload images to Cloudinary (make upload DIR=./my-images)"
+	@echo "  make build          Build Docker image"
+	@echo "  make docker-up      Start server with Docker"
+	@echo "  make docker-down    Stop Docker services"
+	@echo ""
 	@echo "  make clean          Remove generated output"
 	@echo "  make tree           Show project structure"
 	@echo ""
