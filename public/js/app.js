@@ -69,6 +69,11 @@
   const selectedFiles = new Set();
   let favoriteFiles = new Set();
 
+  // ── Pagination ─────────────────────────────────────────────────────
+  let currentPage = 1;
+  let totalPages = 1;
+  const PER_PAGE = 12;
+
   // ── Favorites ────────────────────────────────────────────────────────
   async function loadFavorites() {
     try {
@@ -284,6 +289,8 @@
   }
 
   // ── Fetch Images ─────────────────────────────────────────────────────
+  let allImages = [];
+
   async function loadCatalog() {
     showSkeleton();
     toolbar.hidden = true;
@@ -291,9 +298,10 @@
 
     try {
       await loadFavorites();
-      const res = await fetch('/api/images');
+      const res = await fetch('/api/images?limit=200');
       const data = await res.json();
-      images = data.images || [];
+      allImages = data.images || [];
+      images = allImages;
 
       hideSkeleton();
 
@@ -305,6 +313,7 @@
 
       toolbar.hidden = false;
       buildFilters();
+      currentPage = 1;
       applyFiltersAndSort();
     } catch {
       hideSkeleton();
@@ -428,8 +437,63 @@
       viewMode = 'grid';
     }
 
+    // Pagination
+    totalPages = Math.ceil(filteredImages.length / PER_PAGE);
+    if (currentPage > totalPages) currentPage = 1;
+
     renderGrid();
+    renderPagination();
     updateSelectionCounts();
+  }
+
+  function goToPage(page) {
+    currentPage = Math.max(1, Math.min(page, totalPages));
+    renderGrid();
+    renderPagination();
+    grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderPagination() {
+    const container = document.getElementById('pagination');
+    if (!container) return;
+
+    if (totalPages <= 1) {
+      container.innerHTML = '';
+      return;
+    }
+
+    const start = (currentPage - 1) * PER_PAGE + 1;
+    const end = Math.min(currentPage * PER_PAGE, filteredImages.length);
+
+    let html = `<span class="pagination-info">Mostrando ${start}-${end} de ${filteredImages.length}</span>`;
+    html += '<div class="pagination-controls">';
+
+    // Previous
+    html += `<button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>`;
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+        html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+      } else if (i === currentPage - 3 || i === currentPage + 3) {
+        html += '<span class="pagination-dots">...</span>';
+      }
+    }
+
+    // Next
+    html += `<button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>`;
+
+    html += '</div>';
+    container.innerHTML = html;
+
+    // Event listeners
+    container.querySelectorAll('.pagination-btn:not([disabled])').forEach((btn) => {
+      btn.addEventListener('click', () => goToPage(parseInt(btn.dataset.page, 10)));
+    });
   }
 
   // ── Render Grid ──────────────────────────────────────────────────────
@@ -442,7 +506,11 @@
   }
 
   function renderGridView() {
-    grid.innerHTML = filteredImages.map((img, idx) => buildCardHTML(img, idx)).join('');
+    const start = (currentPage - 1) * PER_PAGE;
+    const end = start + PER_PAGE;
+    const pageImages = filteredImages.slice(start, end);
+
+    grid.innerHTML = pageImages.map((img, idx) => buildCardHTML(img, start + idx)).join('');
     attachCardListeners();
     observeCards();
   }
@@ -485,36 +553,40 @@
   function buildCardHTML(img, idx) {
     const thumbSrc = img.thumbUrl || img.url;
     const isFav = favoriteFiles.has(img.filename);
+    const productUrl = `/producto/${encodeURIComponent(img.filename)}`;
     return `
-      <div class="product-card${isFav ? ' favorited' : ''}" data-index="${idx}" data-filename="${img.filename}" tabindex="0" role="button" aria-label="Ver ${img.name}">
-        <div class="product-select" aria-label="Seleccionar ${img.name}"></div>
-        <button class="product-fav" aria-label="Alternar favorito" data-fav="${img.filename}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        </button>
-        <a class="product-whatsapp" href="${whatsappUrl(img.name)}" target="_blank" rel="noopener" title="Comprar por WhatsApp" onclick="event.stopPropagation()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        </a>
-        <div class="product-image-wrap">
-          <img
-            src="${thumbSrc}"
-            alt="${img.name}"
-            loading="lazy"
-            decoding="async"
-          />
+      <a href="${productUrl}" class="product-card-link">
+        <div class="product-card${isFav ? ' favorited' : ''}" data-index="${idx}" data-filename="${img.filename}" data-url="${productUrl}">
+          <div class="product-select" aria-label="Seleccionar ${img.name}"></div>
+          <button class="product-fav" aria-label="Alternar favorito" data-fav="${img.filename}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+          <a class="product-whatsapp" href="${whatsappUrl(img.name)}" target="_blank" rel="noopener" title="Comprar por WhatsApp" onclick="event.preventDefault(); event.stopPropagation();">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </a>
+          <div class="product-image-wrap">
+            <img
+              src="${thumbSrc}"
+              alt="${img.name}"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div class="product-info">
+            <h2 class="product-name">${img.name}</h2>
+            <div class="product-divider"></div>
+            ${buildCardMeta(img)}
+          </div>
         </div>
-        <div class="product-info">
-          <h2 class="product-name">${img.name}</h2>
-          <div class="product-divider"></div>
-          ${buildCardMeta(img)}
-        </div>
-      </div>`;
+      </a>`;
   }
 
   function buildCardMeta(img) {
     const parts = [];
     if (img.collection) parts.push(`<span class="product-tag">${img.collection}</span>`);
     if (img.category) parts.push(`<span class="product-tag">${img.category}</span>`);
-    if (img.price) parts.push(`<span class="product-price">${img.price}</span>`);
+    if (img.material) parts.push(`<span class="product-tag">${img.material}</span>`);
+    if (img.gemstone) parts.push(`<span class="product-tag">${img.gemstone}</span>`);
     if (parts.length === 0) return '';
     return `<div class="product-meta">${parts.join('')}</div>`;
   }
@@ -565,6 +637,7 @@
 
       if (selectHandle) {
         selectHandle.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
           toggleFileSelection(card.dataset.filename);
         });
@@ -572,20 +645,11 @@
 
       if (favBtn) {
         favBtn.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
           toggleFavorite(favBtn.dataset.fav);
         });
       }
-
-      card.addEventListener('click', () => {
-        openLightbox(parseInt(card.dataset.index, 10));
-      });
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openLightbox(parseInt(card.dataset.index, 10));
-        }
-      });
 
       card.setAttribute('draggable', 'true');
       card.addEventListener('dragstart', handleDragStart);

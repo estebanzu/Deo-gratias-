@@ -740,6 +740,69 @@ body.theme-transitioning::before {
   padding-bottom: var(--space-6);
 }
 
+/* ── Pagination ───────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8) 0;
+}
+
+.pagination-info {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  letter-spacing: 1px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.pagination-btn:hover:not(:disabled):not(.active) {
+  border-color: var(--border-accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.pagination-btn.active {
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
+  font-weight: 500;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-dots {
+  color: var(--text-tertiary);
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+}
+
 /* ── Catalog Grid ────────────────────────────────────────────────────── */
 .catalog {
   flex: 1;
@@ -861,6 +924,13 @@ body.theme-transitioning::before {
   white-space: nowrap;
 }
 
+/* ── Product Card Link ──────────────────────────────────────────────── */
+.product-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 /* ── Product Card ────────────────────────────────────────────────────── */
 .product-card {
   background: var(--bg-secondary);
@@ -869,7 +939,7 @@ body.theme-transitioning::before {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   overflow: hidden;
-  cursor: default;
+  cursor: pointer;
   position: relative;
   transition:
     opacity var(--duration-slower) var(--ease-default),

@@ -92,9 +92,29 @@ app.use('/output', express.static(path.join(__dirname, config.pdf.outputDir), { 
 
 app.use(express.json());
 
+// ── Product Detail Page ──────────────────────────────────────────────────────
+app.get('/producto/:filename', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'producto.html'));
+});
+
 // ── API: List available images with metadata ─────────────────────────────────
-app.get('/api/images', async (_req, res) => {
-  res.json(await getCachedImages());
+app.get('/api/images', async (req, res) => {
+  const result = await getCachedImages();
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 12));
+  const total = result.images.length;
+  const totalPages = Math.ceil(total / limit);
+  const start = (page - 1) * limit;
+  const images = result.images.slice(start, start + limit);
+
+  res.json({
+    images,
+    total,
+    page,
+    totalPages,
+    limit,
+    hasMore: page < totalPages,
+  });
 });
 
 // ── API: Get single product metadata ─────────────────────────────────────────
