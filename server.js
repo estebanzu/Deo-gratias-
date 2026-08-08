@@ -55,7 +55,7 @@ async function getCachedImages() {
 
   const images = resources
     .map((res) => {
-      const filename = cloudinaryApi.filenameFromPublicId(res.public_id);
+      const filename = cloudinaryApi.filenameFromPublicId(res.public_id, res.format);
       const ext = path.extname(filename).toLowerCase();
       const defaultName = path
         .basename(filename, ext)
@@ -242,7 +242,7 @@ app.post('/api/generate-pdf', async (req, res) => {
       return res.status(400).json({ error: 'Failed to fetch images from Cloudinary' });
     }
 
-    let files = resources.map((res) => cloudinaryApi.filenameFromPublicId(res.public_id));
+    let files = resources.map((res) => cloudinaryApi.filenameFromPublicId(res.public_id, res.format));
 
     // Selective export: filter to only requested filenames
     if (Array.isArray(filenames) && filenames.length > 0) {
