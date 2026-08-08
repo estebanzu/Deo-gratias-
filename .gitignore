@@ -2,6 +2,12 @@ node_modules/
 output/
 test-results/
 playwright-report/
+uploads/
 .DS_Store
 .env
 *.log
+*.pid
+data/analytics.json
+data/favorites.json
+data/presets.json
+data/webhooks.json
