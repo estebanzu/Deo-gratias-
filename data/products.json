@@ -1,0 +1,11 @@
+{
+  "celeste-ring.png": {
+    "order": 9999,
+    "filename": "celeste-ring.png"
+  },
+  "aurora-pendant.jpg": {
+    "order": 9999,
+    "filename": "aurora-pendant.jpg",
+    "collection": ""
+  }
+}

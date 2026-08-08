@@ -1,0 +1,975 @@
+/**
+ * Deo Gratias Catalog — Frontend Application
+ * Deep-black luxury theme with animations and micro-interactions.
+ */
+
+(function () {
+  'use strict';
+
+  // ── DOM References ────────────────────────────────────────────────────
+  const grid = document.getElementById('catalog-grid');
+  const emptyState = document.getElementById('empty-state');
+  const skeletonGrid = document.getElementById('skeleton-grid');
+  const countEl = document.getElementById('catalog-count');
+  const toolbar = document.getElementById('toolbar');
+  const searchInput = document.getElementById('search-input');
+  const sortSelect = document.getElementById('sort-select');
+  const filterRow = document.getElementById('filter-row');
+  const btnClearFilters = document.getElementById('btn-clear-filters');
+  const btnRefresh = document.getElementById('btn-refresh');
+  const btnUpload = document.getElementById('btn-upload');
+  const btnPDF = document.getElementById('btn-pdf');
+  const btnTheme = document.getElementById('btn-theme');
+  const btnViewGrid = document.getElementById('btn-view-grid');
+  const btnViewList = document.getElementById('btn-view-list');
+  const pdfOverlay = document.getElementById('pdf-overlay');
+  const toast = document.getElementById('toast');
+  const toastText = toast.querySelector('.toast-text');
+  const toastClose = document.getElementById('toast-close');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxName = document.getElementById('lightbox-name');
+  const lightboxDesc = document.getElementById('lightbox-desc');
+  const lightboxClose = document.getElementById('lightbox-close');
+  const lightboxPrev = document.getElementById('lightbox-prev');
+  const lightboxNext = document.getElementById('lightbox-next');
+  const lightboxHints = document.getElementById('lightbox-hints');
+  const uploadOverlay = document.getElementById('upload-overlay');
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const uploadPreview = document.getElementById('upload-preview');
+  const btnUploadCancel = document.getElementById('btn-upload-cancel');
+  const btnUploadConfirm = document.getElementById('btn-upload-confirm');
+  const scrollProgress = document.getElementById('scroll-progress');
+  const backToTop = document.getElementById('back-to-top');
+  const customCursor = document.getElementById('custom-cursor');
+  const catalogTitle = document.getElementById('catalog-title');
+  const scrollIndicator = document.getElementById('scroll-indicator');
+  const btnSelectMode = document.getElementById('btn-select-mode');
+  const pdfSettingsOverlay = document.getElementById('pdf-settings-overlay');
+  const btnPdfSettingsCancel = document.getElementById('btn-pdf-settings-cancel');
+  const btnPdfSettingsGenerate = document.getElementById('btn-pdf-settings-generate');
+  const pdfExportAllCount = document.getElementById('pdf-export-all-count');
+  const pdfExportSelectedCount = document.getElementById('pdf-export-selected-count');
+  const pdfExportFilteredCount = document.getElementById('pdf-export-filtered-count');
+  const pdfColumns = document.getElementById('pdf-columns');
+  const pdfPerPage = document.getElementById('pdf-per-page');
+  const pdfFormat = document.getElementById('pdf-format');
+  const pdfMarginTop = document.getElementById('pdf-margin-top');
+  const pdfMarginRight = document.getElementById('pdf-margin-right');
+  const pdfMarginBottom = document.getElementById('pdf-margin-bottom');
+  const pdfMarginLeft = document.getElementById('pdf-margin-left');
+
+  let images = [];
+  let filteredImages = [];
+  const activeFilters = { collection: '', category: '', material: '', gemstone: '' };
+  let lightboxIndex = -1;
+  let viewMode = 'grid';
+  let selectionMode = false;
+  const selectedFiles = new Set();
+  let favoriteFiles = new Set();
+
+  // ── Favorites ────────────────────────────────────────────────────────
+  async function loadFavorites() {
+    try {
+      const res = await fetch('/api/favorites');
+      const data = await res.json();
+      favoriteFiles = new Set(data.favorites || []);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function toggleFavorite(filename) {
+    try {
+      const res = await fetch('/api/favorites/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename }),
+      });
+      const data = await res.json();
+      favoriteFiles = new Set(data.favorites || []);
+      document.querySelectorAll(`[data-filename="${filename}"]`).forEach((card) => {
+        card.classList.toggle('favorited', favoriteFiles.has(filename));
+      });
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // ── Hero Letter Reveal (#10) ──────────────────────────────────────────
+  function initHeroLetters() {
+    const text = catalogTitle.textContent;
+    catalogTitle.innerHTML = text
+      .split('')
+      .map(
+        (ch, i) =>
+          `<span class="letter" style="animation-delay:${0.4 + i * 0.04}s">${ch === ' ' ? '&nbsp;' : ch}</span>`
+      )
+      .join('');
+  }
+  initHeroLetters();
+
+  // ── Theme (#1, #22) ──────────────────────────────────────────────────
+  function initTheme() {
+    const saved = localStorage.getItem('deo-gratias-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.body.classList.add('theme-transitioning');
+    setTimeout(() => {
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('deo-gratias-theme', next);
+      setTimeout(() => document.body.classList.remove('theme-transitioning'), 200);
+    }, 150);
+  }
+
+  btnTheme.addEventListener('click', toggleTheme);
+  initTheme();
+
+  // ── Toast (#20) ──────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, isError = false) {
+    toastText.textContent = msg;
+    toast.className = 'toast show' + (isError ? ' error' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.className = 'toast';
+    }, 4000);
+  }
+  toastClose.addEventListener('click', () => {
+    toast.className = 'toast';
+    clearTimeout(toastTimer);
+  });
+
+  // ── Scroll Progress (#24) ────────────────────────────────────────────
+  const heroEl = document.querySelector('.catalog-hero');
+
+  function updateScrollProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    scrollProgress.style.width = pct + '%';
+
+    // Hero parallax
+    if (heroEl && scrollTop < window.innerHeight) {
+      heroEl.style.transform = `translateY(${scrollTop * 0.3}px)`;
+      heroEl.style.opacity = Math.max(0, 1 - scrollTop / (window.innerHeight * 0.8));
+    }
+  }
+
+  // ── Back to Top (#16) ────────────────────────────────────────────────
+  function updateBackToTop() {
+    if (window.scrollY > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  }
+
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ── Scroll Indicator Hide ────────────────────────────────────────────
+  function updateScrollIndicator() {
+    if (window.scrollY > 100) {
+      scrollIndicator.style.opacity = '0';
+    } else {
+      scrollIndicator.style.opacity = '';
+    }
+  }
+
+  window.addEventListener(
+    'scroll',
+    () => {
+      updateScrollProgress();
+      updateBackToTop();
+      updateScrollIndicator();
+    },
+    { passive: true }
+  );
+
+  // ── Custom Cursor (#19) ──────────────────────────────────────────────
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  if (!isTouchDevice) {
+    document.addEventListener('mousemove', (e) => {
+      customCursor.style.left = e.clientX + 'px';
+      customCursor.style.top = e.clientY + 'px';
+    });
+
+    document.addEventListener('mouseover', (e) => {
+      const card = e.target.closest('.product-card');
+      if (card) {
+        customCursor.classList.add('visible');
+      }
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      const card = e.target.closest('.product-card');
+      if (card && !card.contains(e.relatedTarget)) {
+        customCursor.classList.remove('visible');
+      }
+    });
+  }
+
+  // ── Magnetic Buttons (#7) ────────────────────────────────────────────
+  if (!isTouchDevice) {
+    document.querySelectorAll('.magnetic-btn').forEach((btn) => {
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = '';
+      });
+    });
+  }
+
+  // ── Image Tilt on Hover (#8) ─────────────────────────────────────────
+  if (!isTouchDevice) {
+    document.addEventListener('mousemove', (e) => {
+      const card = e.target.closest('.product-card');
+      if (!card) return;
+      const wrap = card.querySelector('.product-image-wrap');
+      if (!wrap) return;
+      const rect = wrap.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      wrap.style.transform = `perspective(600px) rotateY(${x * 3}deg) rotateX(${-y * 3}deg)`;
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      const card = e.target.closest('.product-card');
+      if (!card) return;
+      const wrap = card.querySelector('.product-image-wrap');
+      if (wrap) wrap.style.transform = '';
+    });
+  }
+
+  // ── Animated Counter (#11) ───────────────────────────────────────────
+  function animateCounter(el, from, to, duration) {
+    const start = performance.now();
+    const diff = to - from;
+    function step(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent =
+        Math.round(from + diff * eased) +
+        ' pieza' +
+        (Math.round(from + diff * eased) !== 1 ? 's' : '') +
+        ' en la coleccion';
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ── Skeleton (#13) ───────────────────────────────────────────────────
+  function showSkeleton() {
+    skeletonGrid.hidden = false;
+    grid.hidden = true;
+    emptyState.hidden = true;
+  }
+
+  function hideSkeleton() {
+    skeletonGrid.hidden = true;
+    grid.hidden = false;
+  }
+
+  // ── Fetch Images ─────────────────────────────────────────────────────
+  async function loadCatalog() {
+    showSkeleton();
+    toolbar.hidden = true;
+    countEl.textContent = '';
+
+    try {
+      await loadFavorites();
+      const res = await fetch('/api/images');
+      const data = await res.json();
+      images = data.images || [];
+
+      hideSkeleton();
+
+      if (images.length === 0) {
+        emptyState.hidden = false;
+        grid.hidden = true;
+        return;
+      }
+
+      toolbar.hidden = false;
+      buildFilters();
+      applyFiltersAndSort();
+    } catch {
+      hideSkeleton();
+      emptyState.hidden = false;
+      grid.hidden = true;
+      showToast('Error al cargar el catalogo', true);
+    }
+  }
+
+  // ── Build Filters ────────────────────────────────────────────────────
+  function buildFilters() {
+    const collections = [...new Set(images.map((i) => i.collection).filter(Boolean))].sort();
+    const categories = [...new Set(images.map((i) => i.category).filter(Boolean))].sort();
+    const materials = [...new Set(images.map((i) => i.material).filter(Boolean))].sort();
+    const gemstones = [...new Set(images.map((i) => i.gemstone).filter(Boolean))].sort();
+
+    const groups = [
+      { key: 'collection', values: collections },
+      { key: 'category', values: categories },
+      { key: 'material', values: materials },
+      { key: 'gemstone', values: gemstones },
+    ];
+
+    filterRow.innerHTML = groups
+      .filter((g) => g.values.length > 0)
+      .map(
+        (g) =>
+          `<div class="filter-group">${g.values
+            .map(
+              (v) =>
+                `<button class="filter-chip" data-key="${g.key}" data-value="${v}">${v}</button>`
+            )
+            .join('')}</div>`
+      )
+      .join('');
+
+    filterRow.querySelectorAll('.filter-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const key = chip.dataset.key;
+        const value = chip.dataset.value;
+        if (activeFilters[key] === value) {
+          activeFilters[key] = '';
+          chip.classList.remove('active');
+        } else {
+          filterRow
+            .querySelectorAll(`.filter-chip[data-key="${key}"]`)
+            .forEach((c) => c.classList.remove('active'));
+          activeFilters[key] = value;
+          chip.classList.add('active');
+        }
+        updateClearButton();
+        applyFiltersAndSort();
+      });
+    });
+  }
+
+  function updateClearButton() {
+    const hasActive = Object.values(activeFilters).some(Boolean);
+    btnClearFilters.hidden = !hasActive;
+  }
+
+  btnClearFilters.addEventListener('click', () => {
+    Object.keys(activeFilters).forEach((k) => (activeFilters[k] = ''));
+    filterRow.querySelectorAll('.filter-chip').forEach((c) => c.classList.remove('active'));
+    updateClearButton();
+    applyFiltersAndSort();
+  });
+
+  // ── Apply Filters & Sort ─────────────────────────────────────────────
+  function applyFiltersAndSort() {
+    const query = searchInput.value.toLowerCase().trim();
+
+    filteredImages = images.filter((img) => {
+      if (query) {
+        const searchable = [
+          img.name,
+          img.description,
+          img.collection,
+          img.category,
+          img.material,
+          img.gemstone,
+        ]
+          .join(' ')
+          .toLowerCase();
+        if (!searchable.includes(query)) return false;
+      }
+      if (activeFilters.collection && img.collection !== activeFilters.collection) return false;
+      if (activeFilters.category && img.category !== activeFilters.category) return false;
+      if (activeFilters.material && img.material !== activeFilters.material) return false;
+      if (activeFilters.gemstone && img.gemstone !== activeFilters.gemstone) return false;
+      return true;
+    });
+
+    const [sortKey, sortDir] = sortSelect.value.split('-');
+    filteredImages.sort((a, b) => {
+      if (sortKey === 'name') {
+        const cmp = a.name.localeCompare(b.name);
+        return sortDir === 'desc' ? -cmp : cmp;
+      }
+      if (sortKey === 'collection') {
+        return (a.collection || 'zzz').localeCompare(b.collection || 'zzz');
+      }
+      if (sortKey === 'price') {
+        const pa = parseFloat(a.price) || 0;
+        const pb = parseFloat(b.price) || 0;
+        return sortDir === 'desc' ? pb - pa : pa - pb;
+      }
+      if (sortKey === 'order') {
+        return (a.order ?? 9999) - (b.order ?? 9999);
+      }
+      return 0;
+    });
+
+    // Animated counter
+    const prevCount = parseInt(countEl.textContent) || 0;
+    animateCounter(countEl, prevCount, filteredImages.length, 400);
+
+    if (activeFilters.collection) {
+      viewMode = 'collection';
+    } else if (viewMode === 'collection' && !activeFilters.collection) {
+      viewMode = 'grid';
+    }
+
+    renderGrid();
+    updateSelectionCounts();
+  }
+
+  // ── Render Grid ──────────────────────────────────────────────────────
+  function renderGrid() {
+    if (viewMode === 'collection' && activeFilters.collection) {
+      renderCollectionView();
+    } else {
+      renderGridView();
+    }
+  }
+
+  function renderGridView() {
+    grid.innerHTML = filteredImages.map((img, idx) => buildCardHTML(img, idx)).join('');
+    attachCardListeners();
+    observeCards();
+  }
+
+  function renderCollectionView() {
+    const groups = {};
+    filteredImages.forEach((img, idx) => {
+      const key = img.collection || 'Sin categorizar';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push({ img, idx });
+    });
+
+    grid.innerHTML = Object.entries(groups)
+      .map(
+        ([name, items]) => `
+        <div class="collection-section">
+          <div class="collection-header">
+            <span class="collection-title">${name}</span>
+            <span class="collection-line"></span>
+            <span class="collection-count">${items.length} pieza${items.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="catalog-grid">
+            ${items.map(({ img, idx }) => buildCardHTML(img, idx)).join('')}
+          </div>
+        </div>`
+      )
+      .join('');
+
+    attachCardListeners();
+    observeCards();
+  }
+
+  function buildCardHTML(img, idx) {
+    const thumbSrc = img.thumbUrl || img.url;
+    const isFav = favoriteFiles.has(img.filename);
+    return `
+      <div class="product-card${isFav ? ' favorited' : ''}" data-index="${idx}" data-filename="${img.filename}" tabindex="0" role="button" aria-label="Ver ${img.name}">
+        <div class="product-select" aria-label="Seleccionar ${img.name}"></div>
+        <button class="product-fav" aria-label="Alternar favorito" data-fav="${img.filename}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <div class="product-image-wrap">
+          <img
+            src="${thumbSrc}"
+            alt="${img.name}"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <div class="product-info">
+          <h2 class="product-name">${img.name}</h2>
+          <div class="product-divider"></div>
+          ${buildCardMeta(img)}
+        </div>
+      </div>`;
+  }
+
+  function buildCardMeta(img) {
+    const parts = [];
+    if (img.collection) parts.push(`<span class="product-tag">${img.collection}</span>`);
+    if (img.category) parts.push(`<span class="product-tag">${img.category}</span>`);
+    if (img.price) parts.push(`<span class="product-price">${img.price}</span>`);
+    if (parts.length === 0) return '';
+    return `<div class="product-meta">${parts.join('')}</div>`;
+  }
+
+  // ── Intersection Observer — Scroll Reveal (#6) + Blur-Up (#14) ──────
+  function observeCards() {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            entry.target.classList.remove('card-hidden');
+            // Blur-up image load
+            const img = entry.target.querySelector('img');
+            if (img && !img.classList.contains('loaded')) {
+              if (img.complete) {
+                img.classList.add('loaded');
+              } else {
+                img.addEventListener('load', () => img.classList.add('loaded'), { once: true });
+                img.addEventListener(
+                  'error',
+                  () => {
+                    img.parentElement.innerHTML =
+                      '<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;">Imagen no disponible</div>';
+                  },
+                  { once: true }
+                );
+              }
+            }
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    grid.querySelectorAll('.product-card').forEach((card) => {
+      card.classList.add('card-hidden');
+      observer.observe(card);
+    });
+  }
+
+  // ── Card Listeners ───────────────────────────────────────────────────
+  function attachCardListeners() {
+    grid.querySelectorAll('.product-card').forEach((card) => {
+      const selectHandle = card.querySelector('.product-select');
+      const favBtn = card.querySelector('.product-fav');
+
+      if (selectHandle) {
+        selectHandle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleFileSelection(card.dataset.filename);
+        });
+      }
+
+      if (favBtn) {
+        favBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleFavorite(favBtn.dataset.fav);
+        });
+      }
+
+      card.addEventListener('click', () => {
+        openLightbox(parseInt(card.dataset.index, 10));
+      });
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openLightbox(parseInt(card.dataset.index, 10));
+        }
+      });
+
+      card.setAttribute('draggable', 'true');
+      card.addEventListener('dragstart', handleDragStart);
+      card.addEventListener('dragend', handleDragEnd);
+      card.addEventListener('dragover', handleDragOver);
+      card.addEventListener('dragenter', handleDragEnter);
+      card.addEventListener('dragleave', handleDragLeave);
+      card.addEventListener('drop', handleDrop);
+    });
+  }
+
+  // ── Drag & Drop ──────────────────────────────────────────────────────
+  let dragSrcEl = null;
+
+  function handleDragStart(e) {
+    dragSrcEl = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.filename);
+  }
+
+  function handleDragEnd() {
+    this.classList.remove('dragging');
+    grid.querySelectorAll('.product-card').forEach((c) => c.classList.remove('drag-over'));
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }
+
+  function handleDragEnter(e) {
+    e.preventDefault();
+    if (this !== dragSrcEl) this.classList.add('drag-over');
+  }
+
+  function handleDragLeave() {
+    this.classList.remove('drag-over');
+  }
+
+  async function handleDrop(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+    if (dragSrcEl === this) return;
+
+    const fromFilename = e.dataTransfer.getData('text/plain');
+    const toFilename = this.dataset.filename;
+    const fromImg = images.find((i) => i.filename === fromFilename);
+    const toImg = images.find((i) => i.filename === toFilename);
+    if (!fromImg || !toImg) return;
+
+    const fromOrder = fromImg.order ?? 9999;
+    const toOrder = toImg.order ?? 9999;
+    fromImg.order = toOrder;
+    toImg.order = fromOrder;
+
+    try {
+      await fetch('/api/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orders: [
+            { filename: fromFilename, order: toOrder },
+            { filename: toFilename, order: fromOrder },
+          ],
+        }),
+      });
+      applyFiltersAndSort();
+      showToast('Orden actualizado');
+    } catch {
+      showToast('Error al guardar el orden', true);
+    }
+  }
+
+  // ── Lightbox with Crossfade (#9, #21) ───────────────────────────────
+  function openLightbox(index) {
+    lightboxIndex = index;
+    const img = filteredImages[index];
+    if (!img) return;
+
+    lightbox.hidden = false;
+    lightboxImg.src = img.thumbUrl || img.url;
+    lightboxImg.alt = img.name;
+    lightboxName.textContent = img.name;
+    lightboxDesc.textContent = img.description || '';
+
+    lightboxPrev.style.display = filteredImages.length > 1 ? '' : 'none';
+    lightboxNext.style.display = filteredImages.length > 1 ? '' : 'none';
+    document.body.style.overflow = 'hidden';
+
+    // Track view
+    fetch('/api/analytics/view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: img.filename }),
+    }).catch(() => {});
+
+    // Show hints then fade
+    lightboxHints.style.opacity = '';
+    lightboxHints.style.animation = 'none';
+    void lightboxHints.offsetHeight;
+    lightboxHints.style.animation = '';
+  }
+
+  function closeLightbox() {
+    lightbox.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  function navigateLightbox(dir) {
+    const img = filteredImages[lightboxIndex];
+    if (!img) return;
+
+    // Crossfade transition
+    lightboxImg.classList.add('transitioning');
+    setTimeout(() => {
+      lightboxIndex += dir;
+      if (lightboxIndex < 0) lightboxIndex = filteredImages.length - 1;
+      if (lightboxIndex >= filteredImages.length) lightboxIndex = 0;
+      const next = filteredImages[lightboxIndex];
+      lightboxImg.src = next.thumbUrl || next.url;
+      lightboxImg.alt = next.name;
+      lightboxName.textContent = next.name;
+      lightboxDesc.textContent = next.description || '';
+      lightboxImg.classList.remove('transitioning');
+    }, 250);
+  }
+
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightboxPrev.addEventListener('click', () => navigateLightbox(-1));
+  lightboxNext.addEventListener('click', () => navigateLightbox(1));
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  // ── Upload ────────────────────────────────────────────────────────────
+  let pendingFiles = [];
+
+  function openUpload() {
+    uploadOverlay.hidden = false;
+    pendingFiles = [];
+    uploadPreview.hidden = true;
+    uploadPreview.innerHTML = '';
+    btnUploadConfirm.disabled = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeUpload() {
+    uploadOverlay.hidden = true;
+    document.body.style.overflow = '';
+    fileInput.value = '';
+  }
+
+  function handleFiles(files) {
+    const validExts = ['.jpg', '.jpeg', '.png', '.webp'];
+    const accepted = Array.from(files).filter((f) => {
+      const ext = '.' + f.name.split('.').pop().toLowerCase();
+      return validExts.includes(ext);
+    });
+
+    if (accepted.length === 0) {
+      showToast('Tipo de archivo no soportado', true);
+      return;
+    }
+
+    pendingFiles = accepted;
+    uploadPreview.innerHTML = accepted
+      .map(
+        (f) =>
+          `<div class="upload-preview-item"><img src="${URL.createObjectURL(f)}" alt="${f.name}" /></div>`
+      )
+      .join('');
+    uploadPreview.hidden = false;
+    btnUploadConfirm.disabled = false;
+  }
+
+  async function uploadFiles() {
+    if (pendingFiles.length === 0) return;
+    btnUploadConfirm.disabled = true;
+    let successCount = 0;
+
+    for (const file of pendingFiles) {
+      const formData = new FormData();
+      formData.append('image', file);
+      try {
+        const res = await fetch('/api/images', { method: 'POST', body: formData });
+        if (res.ok) successCount++;
+      } catch {
+        // skip
+      }
+    }
+
+    closeUpload();
+    if (successCount > 0) {
+      showToast(
+        `${successCount} imagen${successCount > 1 ? 's' : ''} subida${successCount > 1 ? 's' : ''}`
+      );
+      loadCatalog();
+    } else {
+      showToast('Error al subir', true);
+    }
+  }
+
+  btnUpload.addEventListener('click', openUpload);
+  btnUploadCancel.addEventListener('click', closeUpload);
+  btnUploadConfirm.addEventListener('click', uploadFiles);
+  uploadOverlay.addEventListener('click', (e) => {
+    if (e.target === uploadOverlay) closeUpload();
+  });
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+  // ── View Toggle (#18) ────────────────────────────────────────────────
+  btnViewGrid.addEventListener('click', () => {
+    viewMode = 'grid';
+    btnViewGrid.classList.add('active');
+    btnViewList.classList.remove('active');
+    grid.classList.remove('list-view');
+    renderGrid();
+  });
+
+  btnViewList.addEventListener('click', () => {
+    viewMode = 'list';
+    btnViewList.classList.add('active');
+    btnViewGrid.classList.remove('active');
+    grid.classList.add('list-view');
+    renderGrid();
+  });
+
+  // ── Selection Mode ──────────────────────────────────────────────────
+  function toggleSelectionMode() {
+    selectionMode = !selectionMode;
+    btnSelectMode.classList.toggle('active', selectionMode);
+    document.querySelectorAll('.product-card').forEach((card) => {
+      card.classList.toggle('selectable', selectionMode);
+    });
+    if (!selectionMode) {
+      selectedFiles.clear();
+      document
+        .querySelectorAll('.product-card.selected')
+        .forEach((c) => c.classList.remove('selected'));
+    }
+    updateSelectionCounts();
+  }
+
+  function toggleFileSelection(filename) {
+    if (selectedFiles.has(filename)) {
+      selectedFiles.delete(filename);
+    } else {
+      selectedFiles.add(filename);
+    }
+    const card = grid.querySelector(`[data-filename="${filename}"]`);
+    if (card) card.classList.toggle('selected', selectedFiles.has(filename));
+    updateSelectionCounts();
+  }
+
+  function updateSelectionCounts() {
+    if (pdfExportAllCount) pdfExportAllCount.textContent = images.length;
+    if (pdfExportSelectedCount) pdfExportSelectedCount.textContent = selectedFiles.size;
+    if (pdfExportFilteredCount) pdfExportFilteredCount.textContent = filteredImages.length;
+  }
+
+  // ── PDF Settings Modal ─────────────────────────────────────────────
+  function openPdfSettings() {
+    updateSelectionCounts();
+    pdfSettingsOverlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePdfSettings() {
+    pdfSettingsOverlay.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  function getSelectedTemplate() {
+    const active = pdfSettingsOverlay.querySelector('.template-btn.active');
+    return active ? active.dataset.template : 'catalog';
+  }
+
+  function getExportScope() {
+    const checked = pdfSettingsOverlay.querySelector('input[name="pdf-export"]:checked');
+    return checked ? checked.value : 'all';
+  }
+
+  function getPdfOptions() {
+    return {
+      template: getSelectedTemplate(),
+      columns: parseInt(pdfColumns.value, 10),
+      perPage: parseInt(pdfPerPage.value, 10),
+      format: pdfFormat.value,
+      margins: {
+        top: parseInt(pdfMarginTop.value, 10),
+        right: parseInt(pdfMarginRight.value, 10),
+        bottom: parseInt(pdfMarginBottom.value, 10),
+        left: parseInt(pdfMarginLeft.value, 10),
+      },
+      exportScope: getExportScope(),
+      selectedFilenames: Array.from(selectedFiles),
+    };
+  }
+
+  async function doGeneratePDF(options) {
+    if (images.length === 0) {
+      showToast('No hay imagenes para incluir en el PDF', true);
+      return;
+    }
+
+    btnPDF.disabled = true;
+    pdfOverlay.hidden = false;
+
+    try {
+      const res = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(options || {}),
+      });
+      const data = await res.json();
+
+      if (data.success && data.downloadUrl) {
+        showToast('PDF generado exitosamente');
+        const a = document.createElement('a');
+        a.href = data.downloadUrl;
+        a.download = 'deo-gratias-catalog.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        showToast(data.error || 'La generacion de PDF fallo', true);
+      }
+    } catch {
+      showToast('La generacion de PDF fallo', true);
+    } finally {
+      btnPDF.disabled = false;
+      pdfOverlay.hidden = true;
+    }
+  }
+
+  // ── Keyboard Shortcuts (#21) ─────────────────────────────────────────
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.hidden) {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navigateLightbox(-1);
+      if (e.key === 'ArrowRight') navigateLightbox(1);
+    }
+    if (!uploadOverlay.hidden && e.key === 'Escape') closeUpload();
+  });
+
+  // ── Event Listeners ──────────────────────────────────────────────────
+  btnRefresh.addEventListener('click', loadCatalog);
+  btnPDF.addEventListener('click', openPdfSettings);
+  btnSelectMode.addEventListener('click', toggleSelectionMode);
+  btnPdfSettingsCancel.addEventListener('click', closePdfSettings);
+  btnPdfSettingsGenerate.addEventListener('click', () => {
+    closePdfSettings();
+    doGeneratePDF(getPdfOptions());
+  });
+  pdfSettingsOverlay.addEventListener('click', (e) => {
+    if (e.target === pdfSettingsOverlay) closePdfSettings();
+  });
+  pdfSettingsOverlay.querySelectorAll('.template-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      pdfSettingsOverlay
+        .querySelectorAll('.template-btn')
+        .forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+  let searchTrackTimer;
+  searchInput.addEventListener('input', () => {
+    applyFiltersAndSort();
+    clearTimeout(searchTrackTimer);
+    searchTrackTimer = setTimeout(() => {
+      const q = searchInput.value.trim();
+      if (q.length >= 2) {
+        fetch('/api/analytics/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: q }),
+        }).catch(() => {});
+      }
+    }, 1000);
+  });
+  sortSelect.addEventListener('change', applyFiltersAndSort);
+
+  // ── Initial Load ─────────────────────────────────────────────────────
+  loadCatalog();
+})();
