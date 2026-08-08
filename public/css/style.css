@@ -2097,6 +2097,30 @@ body.theme-transitioning::before {
   transform: scale(1.15);
 }
 
+/* ── Image Count Badge ────────────────────────────────────────────── */
+.product-image-count {
+  position: absolute;
+  bottom: var(--space-2);
+  right: var(--space-2);
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--accent);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-default);
+}
+
+.product-card:hover .product-image-count {
+  opacity: 1;
+}
+
 .lightbox-whatsapp {
   display: inline-flex;
   align-items: center;

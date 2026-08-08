@@ -6,6 +6,8 @@ Base URL: `http://localhost:3015` (default)
 
 ## Images
 
+Images are hosted on **Cloudinary**. URLs in API responses point to Cloudinary CDN (`res.cloudinary.com`).
+
 ### `GET /api/images`
 
 List all images with metadata. Cached for 30 seconds.
@@ -15,7 +17,7 @@ List all images with metadata. Cached for 30 seconds.
 {
   "images": [
     {
-      "filename": "aurora-pendant.jpg",
+      "filename": "IMG_7813_fjqzot.png",
       "name": "Aurora Pendant",
       "description": "18k gold pendant with sapphire",
       "price": "2400",
@@ -24,12 +26,12 @@ List all images with metadata. Cached for 30 seconds.
       "material": "18k Gold",
       "gemstone": "Sapphire",
       "order": 1,
-      "url": "/images/aurora-pendant.jpg",
-      "thumbUrl": "/images/thumbs/aurora-pendant.webp",
-      "ext": ".jpg"
+      "url": "https://res.cloudinary.com/vh4hahja/image/upload/q_auto/IMG_7813_fjqzot",
+      "thumbUrl": "https://res.cloudinary.com/vh4hahja/image/upload/c_limit,q_auto,w_400/IMG_7813_fjqzot.webp",
+      "ext": ".png"
     }
   ],
-  "total": 17
+  "total": 146
 }
 ```
 
@@ -47,6 +49,8 @@ Upload a new image. Supports `multipart/form-data`.
 
 **Max file size:** 10 MB
 
+Images are uploaded to Cloudinary via the server. The response includes Cloudinary URLs.
+
 **Response**
 ```json
 {
@@ -54,8 +58,8 @@ Upload a new image. Supports `multipart/form-data`.
   "image": {
     "filename": "aurora-pendant.jpg",
     "name": "Aurora Pendant",
-    "url": "/images/aurora-pendant.jpg",
-    "thumbUrl": "/images/thumbs/aurora-pendant.webp",
+    "url": "https://res.cloudinary.com/vh4hahja/image/upload/q_auto/aurora-pendant",
+    "thumbUrl": "https://res.cloudinary.com/vh4hahja/image/upload/c_limit,q_auto,w_400/aurora-pendant.webp",
     "ext": ".jpg"
   }
 }
@@ -63,7 +67,7 @@ Upload a new image. Supports `multipart/form-data`.
 
 ### `DELETE /api/images/:filename`
 
-Delete an image and its thumbnail.
+Delete an image from Cloudinary.
 
 **Response**
 ```json
@@ -123,7 +127,7 @@ Update product metadata. Only provided fields are updated.
 
 ### `DELETE /api/products/:filename`
 
-Remove metadata for a product (image file is NOT deleted).
+Remove metadata for a product (image is NOT deleted from Cloudinary).
 
 **Response**
 ```json
@@ -159,7 +163,7 @@ Batch update product sort order.
 
 ### `POST /api/generate-pdf`
 
-Generate a PDF catalog. Returns a download URL.
+Generate a PDF catalog. Images are fetched from Cloudinary. Returns a download URL.
 
 **Request Body** (all fields optional)
 ```json
@@ -188,7 +192,7 @@ Generate a PDF catalog. Returns a download URL.
   "success": true,
   "downloadUrl": "/output/deo-gratias-catalog.pdf",
   "cached": false,
-  "count": 17
+  "count": 146
 }
 ```
 
@@ -204,8 +208,9 @@ Generate a PDF catalog. Returns a download URL.
 | Path        | Directory       | Cache   |
 |-------------|-----------------|---------|
 | `/`         | `public/`       | 1 hour  |
-| `/images/`  | `images/`       | 7 days  |
 | `/output/`  | `output/`       | 1 hour  |
+
+Images are served from Cloudinary CDN, not the local server.
 
 ---
 

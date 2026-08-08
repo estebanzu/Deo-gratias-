@@ -37,6 +37,14 @@ function invalidateCache() {
   imageCache = { data: null, ts: 0 };
 }
 
+// Extract base product name from filename (e.g., "rosario_cristal_01" -> "rosario_cristal")
+function getBaseProductName(filename) {
+  const name = path.basename(filename, path.extname(filename));
+  // Remove trailing numbers/underscores like _01, _02, _1, _2, _a, _b
+  const base = name.replace(/[-_]([a-z]|\d{1,3})$/i, '');
+  return base || name;
+}
+
 async function getCachedImages() {
   const now = Date.now();
   if (imageCache.data && now - imageCache.ts < CACHE_TTL) {
@@ -53,7 +61,8 @@ async function getCachedImages() {
     return { images: [], total: 0 };
   }
 
-  const images = resources
+  // Build individual images
+  const allImages = resources
     .map((res) => {
       const filename = cloudinaryApi.filenameFromPublicId(res.public_id, res.format);
       const ext = path.extname(filename).toLowerCase();
@@ -81,6 +90,57 @@ async function getCachedImages() {
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  // Group images by base product name
+  const grouped = {};
+  allImages.forEach((img) => {
+    const baseName = getBaseProductName(img.filename);
+    if (!grouped[baseName]) {
+      grouped[baseName] = {
+        id: baseName,
+        name: img.name.replace(/[-_]\d+$/, '').replace(/\b\w/g, c => c.toUpperCase()),
+        description: '',
+        price: '',
+        category: '',
+        collection: '',
+        material: '',
+        gemstone: '',
+        order: img.order,
+        images: [],
+        url: img.url,
+        thumbUrl: img.thumbUrl,
+      };
+    }
+    // Use metadata from first image or from specific image metadata
+    const g = grouped[baseName];
+    if (img.description) g.description = img.description;
+    if (img.price) g.price = img.price;
+    if (img.category) g.category = img.category;
+    if (img.collection) g.collection = img.collection;
+    if (img.material) g.material = img.material;
+    if (img.gemstone) g.gemstone = img.gemstone;
+    if (img.order < g.order) g.order = img.order;
+
+    g.images.push({
+      filename: img.filename,
+      url: img.url,
+      thumbUrl: img.thumbUrl,
+    });
+  });
+
+  // Check for metadata override on the group itself
+  Object.values(grouped).forEach((product) => {
+    const groupMeta = allMeta[product.id] || {};
+    if (groupMeta.name) product.name = groupMeta.name;
+    if (groupMeta.description) product.description = groupMeta.description;
+    if (groupMeta.price) product.price = groupMeta.price;
+    if (groupMeta.category) product.category = groupMeta.category;
+    if (groupMeta.collection) product.collection = groupMeta.collection;
+    if (groupMeta.material) product.material = groupMeta.material;
+    if (groupMeta.gemstone) product.gemstone = groupMeta.gemstone;
+    if (groupMeta.order !== undefined) product.order = groupMeta.order;
+  });
+
+  const images = Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name));
   const result = { images, total: images.length };
   imageCache = { data: result, ts: now };
   return result;

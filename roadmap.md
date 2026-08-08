@@ -34,7 +34,7 @@
 - [x] **Image reordering** — Drag-and-drop reorder with persistence via `/api/reorder`
 - [x] **Collections grouping view** — When a collection filter is active, group cards under section headers
 - [x] **Dark/light theme toggle** — CSS custom properties with `data-theme` attribute and localStorage persistence
-- [x] **Image optimization pipeline** — WebP thumbnail generation via Sharp on upload
+- [x] **Image optimization pipeline** — Cloudinary auto-optimization with on-the-fly WebP thumbnails
 - [x] **Caching headers** — Static assets: 1 hour; images: 7 days; API: 30s TTL with ETag
 - [x] **Enhanced keyboard navigation** — Tab focus, Enter/Space to open lightbox, arrow keys in lightbox, Escape to close
 
@@ -113,7 +113,7 @@
 | Backend | Node.js + Express |
 | Frontend | Vanilla JS + CSS Custom Properties |
 | PDF | Puppeteer |
-| Images | Sharp (WebP thumbnails) |
+| Images | Cloudinary (hosting + transformations) |
 | Upload | Multer |
 | Config | dotenv |
 | Tests | Playwright |

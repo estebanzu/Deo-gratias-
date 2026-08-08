@@ -5,6 +5,7 @@
 - Node.js >= 18.0.0
 - npm
 - Playwright (for tests)
+- Cloudinary account (free tier works)
 
 ## Setup
 
@@ -13,6 +14,7 @@ git clone <repo-url>
 cd deo-gratias-catalog
 npm install
 cp .env.example .env
+# Edit .env with your Cloudinary credentials
 ```
 
 ## Development
@@ -21,7 +23,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Server runs at `http://localhost:3015`. Place jewelry images in `./images/`.
+Server runs at `http://localhost:3015`. Images are hosted on Cloudinary.
 
 ## Project Structure
 
@@ -30,9 +32,10 @@ deo-gratias-catalog/
 ├── server.js              # Express server, API routes
 ├── config.js              # Environment + defaults
 ├── lib/
-│   ├── pdf-generator.js   # Puppeteer PDF generation
+│   ├── cloudinary.js      # Cloudinary SDK wrapper (list, upload, delete, URLs)
+│   ├── pdf-generator.js   # Puppeteer PDF generation (fetches from Cloudinary)
 │   ├── metadata.js        # JSON product metadata CRUD
-│   └── thumbnails.js      # Sharp WebP thumbnail pipeline
+│   └── thumbnails.js      # Cloudinary URL transformations (no local processing)
 ├── public/
 │   ├── index.html         # Single-page app
 │   ├── css/
@@ -42,7 +45,6 @@ deo-gratias-catalog/
 │       └── app.js         # Frontend logic (vanilla JS)
 ├── data/
 │   └── products.json      # Product metadata store
-├── images/                # User-provided jewelry images
 ├── output/                # Generated PDFs
 ├── tests/
 │   └── catalog.spec.js    # Playwright test suite

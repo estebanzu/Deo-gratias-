@@ -53,20 +53,42 @@
 
   <script>
     const WHATSAPP_PHONE = '50688830657';
+    let currentImageIndex = 0;
+    let productImages = [];
 
     function whatsappUrl(productName) {
       const msg = encodeURIComponent(`Hola, me interesa esta pieza: ${productName}`);
       return `https://wa.me/${WHATSAPP_PHONE}?text=${msg}`;
     }
 
+    function changeImage(index) {
+      currentImageIndex = index;
+      const mainImg = document.getElementById('product-main-image');
+      if (mainImg && productImages[index]) {
+        mainImg.src = productImages[index].url;
+      }
+      // Update thumbnail active state
+      document.querySelectorAll('.gallery-thumb').forEach((thumb, i) => {
+        thumb.classList.toggle('active', i === index);
+      });
+    }
+
+    function nextImage() {
+      changeImage((currentImageIndex + 1) % productImages.length);
+    }
+
+    function prevImage() {
+      changeImage((currentImageIndex - 1 + productImages.length) % productImages.length);
+    }
+
     async function loadProduct() {
       const container = document.getElementById('product-detail');
-      const filename = decodeURIComponent(window.location.pathname.split('/').pop());
+      const productId = decodeURIComponent(window.location.pathname.split('/').pop());
 
       try {
         const res = await fetch(`/api/images?limit=200`);
         const data = await res.json();
-        const product = data.images.find(img => img.filename === filename);
+        const product = data.images.find(img => img.id === productId);
 
         if (!product) {
           container.innerHTML = `
@@ -79,11 +101,33 @@
         }
 
         document.title = `${product.name} — Deo Gratias`;
+        productImages = product.images || [];
+
+        const hasMultiple = productImages.length > 1;
 
         container.innerHTML = `
           <div class="product-detail-grid">
-            <div class="product-detail-image">
-              <img src="${product.url}" alt="${product.name}" />
+            <div class="product-detail-gallery">
+              <div class="product-detail-image">
+                <img id="product-main-image" src="${productImages[0].url}" alt="${product.name}" />
+                ${hasMultiple ? `
+                  <button class="gallery-nav gallery-prev" onclick="prevImage()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  <button class="gallery-nav gallery-next" onclick="nextImage()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                ` : ''}
+              </div>
+              ${hasMultiple ? `
+                <div class="gallery-thumbs">
+                  ${productImages.map((img, i) => `
+                    <button class="gallery-thumb ${i === 0 ? 'active' : ''}" onclick="changeImage(${i})">
+                      <img src="${img.thumbUrl || img.url}" alt="${product.name} ${i + 1}" />
+                    </button>
+                  `).join('')}
+                </div>
+              ` : ''}
             </div>
             <div class="product-detail-info">
               <div class="product-detail-breadcrumb">
@@ -97,6 +141,8 @@
               ${product.price ? `<div class="product-detail-price">${product.price}</div>` : ''}
 
               <div class="product-detail-divider"></div>
+
+              ${hasMultiple ? `<p class="product-detail-images-count">${productImages.length} imagenes disponibles</p>` : ''}
 
               <div class="product-detail-meta">
                 ${product.collection ? `
@@ -135,6 +181,13 @@
               </div>
             </div>
           </div>`;
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+          if (!hasMultiple) return;
+          if (e.key === 'ArrowLeft') prevImage();
+          if (e.key === 'ArrowRight') nextImage();
+        });
       } catch (err) {
         container.innerHTML = `
           <div class="product-not-found">

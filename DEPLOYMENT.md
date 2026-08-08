@@ -5,23 +5,35 @@
 ```bash
 npm install
 cp .env.example .env
+# Edit .env with your Cloudinary credentials
 npm start
 # → http://localhost:3015
 ```
 
-Place jewelry images in `./images/`.
-
 ## Environment Variables
 
-| Variable       | Default         | Description                     |
-|----------------|-----------------|---------------------------------|
-| `PORT`         | `3015`          | Server port                     |
-| `IMAGES_DIR`   | `images`        | Image directory path            |
+| Variable                | Default         | Description                          |
+|-------------------------|-----------------|--------------------------------------|
+| `PORT`                  | `3015`          | Server port                          |
+| `IMAGES_DIR`            | `images`        | Legacy image directory (unused)      |
+| `CLOUDINARY_CLOUD_NAME` | —               | Cloudinary cloud name (required)     |
+| `CLOUDINARY_API_KEY`    | —               | Cloudinary API key (required)        |
+| `CLOUDINARY_API_SECRET` | —               | Cloudinary API secret (required)     |
+| `CLOUDINARY_FOLDER`     | (empty)         | Cloudinary folder prefix (optional)  |
 
 Create `.env` from the example:
 ```bash
 cp .env.example .env
 ```
+
+## Cloudinary Setup
+
+Images are hosted on **Cloudinary** instead of the local filesystem.
+
+1. Sign up at https://cloudinary.com (free tier: 25GB storage)
+2. Get your Cloud Name, API Key, and API Secret from the dashboard
+3. Add credentials to `.env`
+4. Upload images via the Cloudinary Media Library or the app's upload button
 
 ## Production Build
 
@@ -39,23 +51,31 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY . .
-RUN mkdir -p images output data
+RUN mkdir -p output data
 EXPOSE 3015
 CMD ["node", "server.js"]
 ```
 
 ```bash
 docker build -t deo-gratias-catalog .
-docker run -p 3015:3015 -v ./images:/app/images deo-gratias-catalog
+docker run -p 3015:3015 \
+  -e CLOUDINARY_CLOUD_NAME=your_cloud_name \
+  -e CLOUDINARY_API_KEY=your_api_key \
+  -e CLOUDINARY_API_SECRET=your_api_secret \
+  deo-gratias-catalog
 ```
 
 ## Railway / Render / Fly.io
 
 1. Push to GitHub
 2. Connect repo to your platform
-3. Set environment variable: `PORT` (or let platform assign)
+3. Set environment variables:
+   - `PORT` (or let platform assign)
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
 4. Deploy — no build command needed
-5. Mount persistent storage for `./images` and `./data`
+5. Only `data/` and `output/` need persistent storage (images are on Cloudinary)
 
 ## Nginx Reverse Proxy
 
@@ -71,23 +91,18 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-
-    location /images/ {
-        proxy_pass http://localhost:3015/images/;
-        expires 7d;
-        add_header Cache-Control "public, immutable";
-    }
 }
 ```
 
 ## Persistent Storage
 
-Two directories must persist across deploys:
+Only one directory must persist across deploys:
 
 | Directory   | Contents                |
 |-------------|-------------------------|
-| `images/`   | User-uploaded jewelry   |
 | `data/`     | `products.json` metadata|
+
+Images are hosted on Cloudinary — no local storage needed.
 
 ## Health Check
 
@@ -104,6 +119,8 @@ Requires Puppeteer (Chromium). On Linux Docker, add:
 RUN apk add --no-cache chromium
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ```
+
+PDF generation fetches images from Cloudinary URLs.
 
 ## SSL / HTTPS
 
