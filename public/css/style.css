@@ -605,6 +605,29 @@ body.theme-transitioning::before {
   color: var(--text-primary);
   font-weight: 300;
   overflow: hidden;
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    var(--text-primary) 0%,
+    var(--text-primary) 40%,
+    var(--accent) 50%,
+    var(--text-primary) 60%,
+    var(--text-primary) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShine 4s ease-in-out infinite;
+}
+
+@keyframes textShine {
+  0%, 100% {
+    background-position: 150% center;
+  }
+  50% {
+    background-position: -50% center;
+  }
 }
 
 .catalog-title .letter {
