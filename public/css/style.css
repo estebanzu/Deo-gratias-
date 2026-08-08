@@ -599,7 +599,7 @@ body.theme-transitioning::before {
 
 .catalog-title {
   font-family: var(--font-display);
-  font-size: var(--text-3xl);
+  font-size: clamp(4rem, 3rem + 5vw, 4.882rem);
   letter-spacing: 8px;
   text-transform: uppercase;
   color: var(--text-primary);
