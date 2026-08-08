@@ -44,6 +44,10 @@ port-kill: ## Kill any process occupying the configured port ($(PORT))
 		echo "  Port $(PORT) is free"; \
 	fi
 
+.PHONY: upload
+upload: ## Upload local images to Cloudinary (make upload [DIR=./my-images])
+	$(NODE) scripts/upload-to-cloudinary.js $(DIR)
+
 .PHONY: docker-up
 docker-up: ## Start server with Docker Compose
 	docker compose up -d --build
@@ -178,6 +182,7 @@ help: ## Show this help message
 	@echo "  make audit-fix      Auto-fix audit vulnerabilities"
 	@echo ""
 	@echo "  make pdf            Generate PDF catalog (no server needed)"
+	@echo "  make upload         Upload images to Cloudinary (make upload DIR=./my-images)"
 	@echo "  make clean          Remove generated output"
 	@echo "  make tree           Show project structure"
 	@echo ""
