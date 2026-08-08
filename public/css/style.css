@@ -631,7 +631,8 @@ body.theme-transitioning::before {
   0% {
     left: -100%;
   }
-  50%, 100% {
+  50%,
+  100% {
     left: 150%;
   }
 }
@@ -2020,6 +2021,12 @@ body.theme-transitioning::before {
 
 .product-card.selectable .product-select {
   opacity: 1;
+  z-index: 10;
+}
+
+.product-card.selectable .product-whatsapp {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .product-select:hover {

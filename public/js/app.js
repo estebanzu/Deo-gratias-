@@ -111,7 +111,7 @@
   }
 
   // ── Image Error Handler ────────────────────────────────────────────
-  window.handleImageError = function(img) {
+  window.handleImageError = function (img) {
     img.style.display = 'none';
     const wrap = img.parentElement;
     if (wrap && !wrap.querySelector('.product-image-error')) {
@@ -693,11 +693,33 @@
       const selectHandle = card.querySelector('.product-select');
       const favBtn = card.querySelector('.product-fav');
 
+      card.setAttribute('tabindex', '0');
+
+      card.addEventListener('click', (e) => {
+        if (selectionMode) return;
+        const idx = parseInt(card.dataset.index, 10);
+        if (!isNaN(idx)) {
+          e.preventDefault();
+          e.stopPropagation();
+          openLightbox(idx);
+        }
+      });
+
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !selectionMode) {
+          const idx = parseInt(card.dataset.index, 10);
+          if (!isNaN(idx)) {
+            e.preventDefault();
+            openLightbox(idx);
+          }
+        }
+      });
+
       if (selectHandle) {
         selectHandle.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          toggleFileSelection(card.dataset.filename);
+          toggleFileSelection(card.dataset.id);
         });
       }
 
@@ -976,7 +998,7 @@
     } else {
       selectedFiles.add(filename);
     }
-    const card = grid.querySelector(`[data-filename="${filename}"]`);
+    const card = grid.querySelector(`[data-id="${filename}"]`);
     if (card) card.classList.toggle('selected', selectedFiles.has(filename));
     updateSelectionCounts();
   }

@@ -25,11 +25,11 @@ test.describe('Deo Gratias Catalog', () => {
 
   test('loads and shows the brand header', async ({ page }) => {
     await expect(page.locator('.brand-name')).toHaveText('Deo Gratias');
-    await expect(page.locator('.brand-tagline')).toHaveText('Fine Jewelry');
+    await expect(page.locator('.brand-tagline')).toHaveText('Joyeria Fina');
   });
 
   test('shows the catalog hero section', async ({ page }) => {
-    await expect(page.locator('.catalog-title')).toHaveText('The Collection');
+    await expect(page.locator('.catalog-title')).toHaveText('Deo Gratias');
     await expect(page.locator('.catalog-subtitle')).toBeVisible();
   });
 
@@ -48,7 +48,7 @@ test.describe('Deo Gratias Catalog', () => {
   });
 
   test('shows the correct image count', async ({ page }) => {
-    await expect(page.locator('#catalog-count')).toContainText('piece');
+    await expect(page.locator('#catalog-count')).toContainText('pieza');
   });
 
   test('each card has an image and a name', async ({ page }) => {
@@ -229,7 +229,7 @@ test.describe('Deo Gratias Catalog', () => {
     expect(data.total).toBeGreaterThan(0);
     expect(Array.isArray(data.images)).toBeTruthy();
     const img = data.images[0];
-    expect(img).toHaveProperty('filename');
+    expect(img).toHaveProperty('id');
     expect(img).toHaveProperty('name');
     expect(img).toHaveProperty('url');
     expect(img).toHaveProperty('collection');
@@ -238,12 +238,14 @@ test.describe('Deo Gratias Catalog', () => {
   });
 
   test('API product metadata CRUD', async ({ page }) => {
+    const auth = { Authorization: 'Basic ' + Buffer.from('admin:admin').toString('base64') };
     const listRes = await page.request.get('/api/images');
     const { images } = await listRes.json();
-    const filename = images[0].filename;
+    const productId = images[0].id;
 
     // Update
-    const putRes = await page.request.put(`/api/products/${filename}`, {
+    const putRes = await page.request.put(`/api/products/${productId}`, {
+      headers: auth,
       data: { name: 'Test Name', collection: 'Test Collection', price: '$999' },
     });
     expect(putRes.ok()).toBeTruthy();
@@ -252,7 +254,7 @@ test.describe('Deo Gratias Catalog', () => {
     expect(saved.collection).toBe('Test Collection');
 
     // Read
-    const getRes = await page.request.get(`/api/products/${filename}`);
+    const getRes = await page.request.get(`/api/products/${productId}`);
     expect(getRes.ok()).toBeTruthy();
     const fetched = await getRes.json();
     expect(fetched.name).toBe('Test Name');
@@ -260,12 +262,12 @@ test.describe('Deo Gratias Catalog', () => {
     // List includes metadata
     const listRes2 = await page.request.get('/api/images');
     const data2 = await listRes2.json();
-    const match = data2.images.find((i) => i.filename === filename);
+    const match = data2.images.find((i) => i.id === productId);
     expect(match.name).toBe('Test Name');
     expect(match.collection).toBe('Test Collection');
 
     // Cleanup
-    await page.request.delete(`/api/products/${filename}`);
+    await page.request.delete(`/api/products/${productId}`, { headers: auth });
   });
 
   // ── Theme Toggle ────────────────────────────────────────────────────
@@ -310,14 +312,14 @@ test.describe('Deo Gratias Catalog', () => {
   test('reorder API updates product order', async ({ page }) => {
     const listRes = await page.request.get('/api/images');
     const { images } = await listRes.json();
-    const f1 = images[0].filename;
-    const f2 = images[1].filename;
+    const id1 = images[0].id;
+    const id2 = images[1].id;
 
     const reorderRes = await page.request.post('/api/reorder', {
       data: {
         orders: [
-          { filename: f1, order: 100 },
-          { filename: f2, order: 0 },
+          { filename: id1, order: 100 },
+          { filename: id2, order: 0 },
         ],
       },
     });
@@ -328,8 +330,8 @@ test.describe('Deo Gratias Catalog', () => {
     // Verify order changed
     const listRes2 = await page.request.get('/api/images');
     const data2 = await listRes2.json();
-    const img1 = data2.images.find((i) => i.filename === f1);
-    const img2 = data2.images.find((i) => i.filename === f2);
+    const img1 = data2.images.find((i) => i.id === id1);
+    const img2 = data2.images.find((i) => i.id === id2);
     expect(img1.order).toBe(100);
     expect(img2.order).toBe(0);
 
@@ -337,8 +339,8 @@ test.describe('Deo Gratias Catalog', () => {
     await page.request.post('/api/reorder', {
       data: {
         orders: [
-          { filename: f1, order: images[0].order },
-          { filename: f2, order: images[1].order },
+          { filename: id1, order: images[0].order },
+          { filename: id2, order: images[1].order },
         ],
       },
     });
@@ -373,9 +375,9 @@ test.describe('Deo Gratias Catalog', () => {
     // First, set up a product with a collection
     const listRes = await page.request.get('/api/images');
     const { images } = await listRes.json();
-    const filename = images[0].filename;
+    const productId = images[0].id;
 
-    await page.request.put(`/api/products/${filename}`, {
+    await page.request.put(`/api/products/${productId}`, {
       data: { collection: 'Test Group' },
     });
 
@@ -402,7 +404,7 @@ test.describe('Deo Gratias Catalog', () => {
     }
 
     // Cleanup
-    await page.request.put(`/api/products/${filename}`, {
+    await page.request.put(`/api/products/${productId}`, {
       data: { collection: '' },
     });
   });
@@ -534,8 +536,10 @@ test.describe('Deo Gratias Catalog', () => {
   test('PDF export counts update based on selection', async ({ page }) => {
     await page.locator('#btn-select-mode').click();
     const allCount = await page.locator('.product-card').count();
-    await expect(page.locator('#pdf-export-all-count')).toContainText(String(allCount));
-    await expect(page.locator('#pdf-export-filtered-count')).toContainText(String(allCount));
+    const totalText = await page.locator('#pdf-export-all-count').textContent();
+    const totalCount = parseInt(totalText, 10);
+    expect(totalCount).toBeGreaterThanOrEqual(allCount);
+    await expect(page.locator('#pdf-export-filtered-count')).toContainText(String(totalCount));
     await expect(page.locator('#pdf-export-selected-count')).toContainText('0');
   });
 

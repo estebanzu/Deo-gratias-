@@ -7,5 +7,13 @@
     "order": 9999,
     "filename": "aurora-pendant.jpg",
     "collection": ""
+  },
+  "collar_hilo_negro_sol": {
+    "order": 9999,
+    "filename": "collar_hilo_negro_sol"
+  },
+  "collar_hilo_rosa": {
+    "order": 9999,
+    "filename": "collar_hilo_rosa"
   }
 }

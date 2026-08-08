@@ -69,7 +69,9 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   text-align: center;
-  transition: border-color 0.3s, transform 0.3s;
+  transition:
+    border-color 0.3s,
+    transform 0.3s;
 }
 
 .value-card:hover {

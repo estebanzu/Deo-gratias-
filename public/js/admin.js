@@ -5,15 +5,20 @@
   let authToken = localStorage.getItem('dg-admin-token');
 
   function getAuthHeaders() {
-    return authToken ? { 'Authorization': 'Basic ' + authToken } : {};
+    return authToken ? { Authorization: 'Basic ' + authToken } : {};
   }
 
   async function checkAuth() {
     if (!authToken) return showLogin();
     try {
       const res = await fetch('/api/images?limit=1', { headers: getAuthHeaders() });
-      if (!res.ok) { showLogin(); return; }
-    } catch { showLogin(); }
+      if (!res.ok) {
+        showLogin();
+        return;
+      }
+    } catch {
+      showLogin();
+    }
   }
 
   function showLogin() {
@@ -96,15 +101,19 @@
     toastText.textContent = msg;
     toast.hidden = false;
     clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => { toast.hidden = true; }, 3000);
+    toast._timer = setTimeout(() => {
+      toast.hidden = true;
+    }, 3000);
   }
-  document.getElementById('toast-close').addEventListener('click', () => { toast.hidden = true; });
+  document.getElementById('toast-close').addEventListener('click', () => {
+    toast.hidden = true;
+  });
 
   // ── Tabs ────────────────────────────────────────────────────────
-  tabs.forEach(tab => {
+  tabs.forEach((tab) => {
     tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tabContents.forEach(c => c.classList.remove('active'));
+      tabs.forEach((t) => t.classList.remove('active'));
+      tabContents.forEach((c) => c.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
     });
@@ -124,7 +133,9 @@
 
   function renderProducts(products) {
     adminCount.textContent = products.length + ' productos';
-    productList.innerHTML = products.map(p => `
+    productList.innerHTML = products
+      .map(
+        (p) => `
       <div class="admin-product-row" data-id="${p.id}">
         <img class="admin-product-thumb" src="${p.thumbUrl}" alt="${p.name}" loading="lazy" />
         <div class="admin-product-info">
@@ -140,9 +151,11 @@
           </button>
         </div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
 
-    productList.querySelectorAll('.btn-edit').forEach(btn => {
+    productList.querySelectorAll('.btn-edit').forEach((btn) => {
       btn.addEventListener('click', () => openProductModal(btn.dataset.id));
     });
   }
@@ -150,18 +163,19 @@
   // ── Search ──────────────────────────────────────────────────────
   adminSearch.addEventListener('input', () => {
     const q = adminSearch.value.toLowerCase();
-    const filtered = allProducts.filter(p =>
-      p.name.toLowerCase().includes(q) ||
-      p.id.toLowerCase().includes(q) ||
-      (p.category || '').toLowerCase().includes(q) ||
-      (p.material || '').toLowerCase().includes(q)
+    const filtered = allProducts.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.id.toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q) ||
+        (p.material || '').toLowerCase().includes(q)
     );
     renderProducts(filtered);
   });
 
   // ── Product Modal ───────────────────────────────────────────────
   function openProductModal(id) {
-    const product = allProducts.find(p => p.id === id);
+    const product = allProducts.find((p) => p.id === id);
     if (!product) return;
 
     document.getElementById('modal-product-title').textContent = 'Editar: ' + product.name;
@@ -192,8 +206,12 @@
     select.value = current;
   }
 
-  document.getElementById('modal-close').addEventListener('click', () => { productModal.hidden = true; });
-  document.getElementById('form-cancel').addEventListener('click', () => { productModal.hidden = true; });
+  document.getElementById('modal-close').addEventListener('click', () => {
+    productModal.hidden = true;
+  });
+  document.getElementById('form-cancel').addEventListener('click', () => {
+    productModal.hidden = true;
+  });
 
   productModal.addEventListener('click', (e) => {
     if (e.target === productModal) productModal.hidden = true;
@@ -241,10 +259,15 @@
   }
 
   function renderCollections() {
-    const entries = Object.entries(allCollections).sort((a, b) => (a[1].order ?? 9999) - (b[1].order ?? 9999));
-    collectionList.innerHTML = entries.length === 0
-      ? '<p style="color:var(--text-secondary);padding:1rem;">No hay colecciones creadas.</p>'
-      : entries.map(([slug, col]) => `
+    const entries = Object.entries(allCollections).sort(
+      (a, b) => (a[1].order ?? 9999) - (b[1].order ?? 9999)
+    );
+    collectionList.innerHTML =
+      entries.length === 0
+        ? '<p style="color:var(--text-secondary);padding:1rem;">No hay colecciones creadas.</p>'
+        : entries
+            .map(
+              ([slug, col]) => `
         <div class="admin-collection-row" data-slug="${slug}">
           <div class="admin-collection-name">${col.name}</div>
           <div class="admin-collection-meta">${col.parent || '—'}</div>
@@ -258,12 +281,14 @@
             </button>
           </div>
         </div>
-      `).join('');
+      `
+            )
+            .join('');
 
-    collectionList.querySelectorAll('.btn-edit-col').forEach(btn => {
+    collectionList.querySelectorAll('.btn-edit-col').forEach((btn) => {
       btn.addEventListener('click', () => openCollectionModal(btn.dataset.slug));
     });
-    collectionList.querySelectorAll('.btn-delete-col').forEach(btn => {
+    collectionList.querySelectorAll('.btn-delete-col').forEach((btn) => {
       btn.addEventListener('click', () => deleteCollection(btn.dataset.slug));
     });
   }
@@ -271,7 +296,9 @@
   // ── Collection Modal ────────────────────────────────────────────
   function openCollectionModal(slug) {
     const col = slug ? allCollections[slug] : null;
-    document.getElementById('modal-collection-title').textContent = col ? 'Editar Coleccion' : 'Nueva Coleccion';
+    document.getElementById('modal-collection-title').textContent = col
+      ? 'Editar Coleccion'
+      : 'Nueva Coleccion';
     document.getElementById('col-form-slug').value = slug || '';
     document.getElementById('col-form-name').value = col ? col.name : '';
     document.getElementById('col-form-description').value = col ? col.description || '' : '';
@@ -286,14 +313,20 @@
       opt.textContent = c.name;
       parentSelect.appendChild(opt);
     }
-    parentSelect.value = col ? (col.parent || '') : '';
+    parentSelect.value = col ? col.parent || '' : '';
 
     collectionModal.hidden = false;
   }
 
-  document.getElementById('btn-add-collection').addEventListener('click', () => openCollectionModal(null));
-  document.getElementById('collection-modal-close').addEventListener('click', () => { collectionModal.hidden = true; });
-  document.getElementById('col-form-cancel').addEventListener('click', () => { collectionModal.hidden = true; });
+  document
+    .getElementById('btn-add-collection')
+    .addEventListener('click', () => openCollectionModal(null));
+  document.getElementById('collection-modal-close').addEventListener('click', () => {
+    collectionModal.hidden = true;
+  });
+  document.getElementById('col-form-cancel').addEventListener('click', () => {
+    collectionModal.hidden = true;
+  });
 
   collectionModal.addEventListener('click', (e) => {
     if (e.target === collectionModal) collectionModal.hidden = true;
@@ -342,11 +375,15 @@
 
   // ── Scroll Progress ─────────────────────────────────────────────
   const scrollProgress = document.getElementById('scroll-progress');
-  window.addEventListener('scroll', () => {
-    const h = document.documentElement.scrollHeight - window.innerHeight;
-    const pct = h > 0 ? (window.scrollY / h) * 100 : 0;
-    scrollProgress.style.width = pct + '%';
-  }, { passive: true });
+  window.addEventListener(
+    'scroll',
+    () => {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = h > 0 ? (window.scrollY / h) * 100 : 0;
+      scrollProgress.style.width = pct + '%';
+    },
+    { passive: true }
+  );
 
   // ── Init ────────────────────────────────────────────────────────
   loadProducts();

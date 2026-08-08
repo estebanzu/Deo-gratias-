@@ -97,7 +97,7 @@ async function getCachedImages() {
     if (!grouped[baseName]) {
       grouped[baseName] = {
         id: baseName,
-        name: img.name.replace(/[-_]\d+$/, '').replace(/\b\w/g, c => c.toUpperCase()),
+        name: img.name.replace(/[-_]\d+$/, '').replace(/\b\w/g, (c) => c.toUpperCase()),
         description: '',
         price: '',
         category: '',
@@ -272,7 +272,9 @@ app.post('/api/images', upload.single('image'), async (req, res) => {
     const result = await cloudinaryApi.uploadImage(req.file.path, safeName);
 
     // Clean up temp file
-    try { fs.unlinkSync(req.file.path); } catch {}
+    try {
+      fs.unlinkSync(req.file.path);
+    } catch {}
 
     // Save any metadata sent with the upload
     const metaUpdates = {};
@@ -298,7 +300,9 @@ app.post('/api/images', upload.single('image'), async (req, res) => {
       },
     });
   } catch (err) {
-    try { fs.unlinkSync(req.file.path); } catch {}
+    try {
+      fs.unlinkSync(req.file.path);
+    } catch {}
     console.error('Cloudinary upload error:', err.message);
     res.status(500).json({ error: 'Failed to upload image' });
   }
@@ -345,7 +349,9 @@ app.post('/api/generate-pdf', async (req, res) => {
       return res.status(400).json({ error: 'Failed to fetch images from Cloudinary' });
     }
 
-    let files = resources.map((res) => cloudinaryApi.filenameFromPublicId(res.public_id, res.format));
+    let files = resources.map((res) =>
+      cloudinaryApi.filenameFromPublicId(res.public_id, res.format)
+    );
 
     // Selective export: filter to only requested filenames
     if (Array.isArray(filenames) && filenames.length > 0) {
@@ -561,7 +567,10 @@ app.get('/api/collections/:slug', (req, res) => {
 app.post('/api/collections', adminAuth, (req, res) => {
   const { name, description, coverImage, parent, order } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
   const result = collections.create(slug, { name, description, coverImage, parent, order });
   if (result.error) return res.status(409).json(result);
   res.status(201).json(result);
