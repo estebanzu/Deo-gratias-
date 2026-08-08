@@ -44,6 +44,14 @@ port-kill: ## Kill any process occupying the configured port ($(PORT))
 		echo "  Port $(PORT) is free"; \
 	fi
 
+.PHONY: docker-up
+docker-up: ## Start server with Docker Compose
+	docker compose up -d --build
+
+.PHONY: docker-down
+docker-down: ## Stop Docker Compose services
+	docker compose down
+
 ## ── Testing ───────────────────────────────────────────────────────────
 
 .PHONY: test
@@ -152,6 +160,9 @@ help: ## Show this help message
 	@echo "  make stop           Stop background server"
 	@echo "  make restart        Restart the server"
 	@echo "  make port-kill      Kill any process on port $(PORT)"
+	@echo ""
+	@echo "  make docker-up      Start server with Docker"
+	@echo "  make docker-down    Stop Docker services"
 	@echo ""
 	@echo "  make test           Run Playwright tests"
 	@echo "  make test-ui        Run Playwright tests (headed)"

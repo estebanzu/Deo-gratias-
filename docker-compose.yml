@@ -1,0 +1,12 @@
+services:
+  catalog:
+    build: .
+    ports:
+      - "3015:3015"
+    volumes:
+      - ./images:/app/images
+      - ./output:/app/output
+      - ./data:/app/data
+    env_file:
+      - .env
+    restart: unless-stopped
