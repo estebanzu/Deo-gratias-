@@ -1007,6 +1007,23 @@ body.theme-transitioning::before {
   filter: blur(0) saturate(1);
 }
 
+.product-image-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-8);
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.product-image-error svg {
+  opacity: 0.3;
+}
+
 .product-card:hover .product-image-wrap img {
   transform: scale(1.04);
 }

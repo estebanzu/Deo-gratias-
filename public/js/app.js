@@ -74,6 +74,61 @@
   let totalPages = 1;
   const PER_PAGE = 12;
 
+  // ── Focus Trap ─────────────────────────────────────────────────────
+  function trapFocus(modal) {
+    const focusable = modal.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    function handler(e) {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    modal._focusTrapHandler = handler;
+    modal.addEventListener('keydown', handler);
+    first.focus();
+  }
+
+  function releaseFocus(modal) {
+    if (modal._focusTrapHandler) {
+      modal.removeEventListener('keydown', modal._focusTrapHandler);
+      modal._focusTrapHandler = null;
+    }
+  }
+
+  // ── Image Error Handler ────────────────────────────────────────────
+  window.handleImageError = function(img) {
+    img.style.display = 'none';
+    const wrap = img.parentElement;
+    if (wrap && !wrap.querySelector('.product-image-error')) {
+      const errDiv = document.createElement('div');
+      errDiv.className = 'product-image-error';
+      errDiv.setAttribute('role', 'img');
+      errDiv.setAttribute('aria-label', 'Imagen no disponible');
+      errDiv.innerHTML = `
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <span>Imagen no disponible</span>
+      `;
+      wrap.appendChild(errDiv);
+    }
+  };
+
   // ── Favorites ────────────────────────────────────────────────────────
   async function loadFavorites() {
     try {
@@ -572,6 +627,7 @@
               alt="${img.name}"
               loading="lazy"
               decoding="async"
+              onerror="handleImageError(this)"
             />
           </div>
           <div class="product-info">
@@ -744,6 +800,7 @@
     lightboxPrev.style.display = filteredImages.length > 1 ? '' : 'none';
     lightboxNext.style.display = filteredImages.length > 1 ? '' : 'none';
     document.body.style.overflow = 'hidden';
+    trapFocus(lightbox);
 
     // Track view
     fetch('/api/analytics/view', {
@@ -760,6 +817,7 @@
   }
 
   function closeLightbox() {
+    releaseFocus(lightbox);
     lightbox.hidden = true;
     document.body.style.overflow = '';
   }
@@ -800,9 +858,11 @@
     uploadPreview.innerHTML = '';
     btnUploadConfirm.disabled = true;
     document.body.style.overflow = 'hidden';
+    trapFocus(uploadOverlay);
   }
 
   function closeUpload() {
+    releaseFocus(uploadOverlay);
     uploadOverlay.hidden = true;
     document.body.style.overflow = '';
     fileInput.value = '';
@@ -932,9 +992,11 @@
     updateSelectionCounts();
     pdfSettingsOverlay.hidden = false;
     document.body.style.overflow = 'hidden';
+    trapFocus(pdfSettingsOverlay);
   }
 
   function closePdfSettings() {
+    releaseFocus(pdfSettingsOverlay);
     pdfSettingsOverlay.hidden = true;
     document.body.style.overflow = '';
   }

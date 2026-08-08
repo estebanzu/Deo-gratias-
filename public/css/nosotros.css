@@ -1,0 +1,163 @@
+.nosotros-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.nosotros-hero {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding-top: 2rem;
+}
+
+.nosotros-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 2rem + 3vw, 4rem);
+  font-weight: 300;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.nosotros-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  font-style: italic;
+}
+
+/* ── Sections ───────────────────────────────────────────────────── */
+.nosotros-section {
+  margin-bottom: 4rem;
+}
+
+.section-icon {
+  text-align: center;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  text-align: center;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+}
+
+.section-text {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.8;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.nosotros-content {
+  text-align: center;
+}
+
+/* ── Values Grid ────────────────────────────────────────────────── */
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.value-card {
+  padding: 2rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-align: center;
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.value-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-4px);
+}
+
+.value-icon {
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+.value-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+
+.value-card p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ── Process Steps ──────────────────────────────────────────────── */
+.process-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.process-step {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.step-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+  min-width: 60px;
+}
+
+.step-content h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.step-content p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ── CTA ────────────────────────────────────────────────────────── */
+.nosotros-cta {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.btn-lg {
+  padding: 0.85rem 2.5rem;
+  font-size: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .values-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .process-step {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .step-number {
+    font-size: 1.8rem;
+    min-width: auto;
+  }
+}

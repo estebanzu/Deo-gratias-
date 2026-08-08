@@ -41,6 +41,11 @@ module.exports = {
     mono: "'JetBrains Mono', 'SF Mono', monospace",
   },
 
+  admin: {
+    user: process.env.ADMIN_USER || 'admin',
+    pass: process.env.ADMIN_PASS || 'admin',
+  },
+
   pdf: {
     format: 'A4',
     outputDir: 'output',

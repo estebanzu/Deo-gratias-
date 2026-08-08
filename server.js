@@ -152,6 +152,29 @@ app.use('/output', express.static(path.join(__dirname, config.pdf.outputDir), { 
 
 app.use(express.json());
 
+// ── Admin Auth Middleware ────────────────────────────────────────────────────
+function adminAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const decoded = Buffer.from(authHeader.split(' ')[1], 'base64').toString();
+  const [user, pass] = decoded.split(':');
+  if (user === config.admin.user && pass === config.admin.pass) {
+    return next();
+  }
+  return res.status(401).json({ error: 'Invalid credentials' });
+}
+
+// ── Static Pages ────────────────────────────────────────────────────────────
+app.get('/admin', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.get('/nosotros', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'nosotros.html'));
+});
+
 // ── Product Detail Page ──────────────────────────────────────────────────────
 app.get('/producto/:filename', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'producto.html'));
@@ -185,7 +208,7 @@ app.get('/api/products/:filename', (req, res) => {
 });
 
 // ── API: Update product metadata ─────────────────────────────────────────────
-app.put('/api/products/:filename', async (req, res) => {
+app.put('/api/products/:filename', adminAuth, async (req, res) => {
   const { filename } = req.params;
   const exists = await cloudinaryApi.imageExists(filename);
   if (!exists) {
@@ -230,7 +253,7 @@ app.post('/api/reorder', (req, res) => {
 });
 
 // ── API: Delete product metadata ─────────────────────────────────────────────
-app.delete('/api/products/:filename', (req, res) => {
+app.delete('/api/products/:filename', adminAuth, (req, res) => {
   metadata.remove(req.params.filename);
   invalidateCache();
   res.json({ success: true });
@@ -518,6 +541,52 @@ app.delete('/api/webhooks', (req, res) => {
   const ok = webhooks.unregister(url);
   if (!ok) return res.status(404).json({ error: 'Webhook not found' });
   res.json({ success: true });
+});
+
+// ── API: Collections ────────────────────────────────────────────────────────
+app.get('/api/collections', (_req, res) => {
+  res.json({ collections: collections.list() });
+});
+
+app.get('/api/collections/tree', (_req, res) => {
+  res.json({ tree: collections.getTree() });
+});
+
+app.get('/api/collections/:slug', (req, res) => {
+  const col = collections.get(req.params.slug);
+  if (!col) return res.status(404).json({ error: 'Collection not found' });
+  res.json(col);
+});
+
+app.post('/api/collections', adminAuth, (req, res) => {
+  const { name, description, coverImage, parent, order } = req.body;
+  if (!name) return res.status(400).json({ error: 'name is required' });
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const result = collections.create(slug, { name, description, coverImage, parent, order });
+  if (result.error) return res.status(409).json(result);
+  res.status(201).json(result);
+});
+
+app.put('/api/collections/:slug', adminAuth, (req, res) => {
+  const result = collections.update(req.params.slug, req.body);
+  if (!result) return res.status(404).json({ error: 'Collection not found' });
+  res.json(result);
+});
+
+app.delete('/api/collections/:slug', adminAuth, (req, res) => {
+  const ok = collections.remove(req.params.slug);
+  if (!ok) return res.status(404).json({ error: 'Collection not found' });
+  res.json({ success: true });
+});
+
+// ── API: Admin Login ────────────────────────────────────────────────────────
+app.post('/api/login', (req, res) => {
+  const { user, pass } = req.body;
+  if (user === config.admin.user && pass === config.admin.pass) {
+    const token = Buffer.from(`${user}:${pass}`).toString('base64');
+    return res.json({ success: true, token });
+  }
+  return res.status(401).json({ error: 'Invalid credentials' });
 });
 
 // ── Multer error handler ─────────────────────────────────────────────────────

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Deo Gratias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/fonts.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Ir al contenido principal</a>
+  <div id="scroll-progress" class="scroll-progress"></div>
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-mark">
+        <a href="/" class="brand-name">Deo Gratias</a>
+        <span class="brand-tagline">Admin</span>
+      </div>
+      <nav class="header-actions">
+        <a href="/" class="btn btn-ghost">Ver Catalogo</a>
+        <button id="btn-logout" class="btn btn-ghost">Cerrar Sesion</button>
+        <button id="btn-theme" class="theme-toggle" title="Cambiar tema">
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" class="admin-page">
+    <section class="admin-hero">
+      <h1>Panel de Administracion</h1>
+      <p>Gestione productos, colecciones y metadata del catalogo</p>
+    </section>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="products">Productos</button>
+      <button class="admin-tab" data-tab="collections">Colecciones</button>
+    </div>
+
+    <!-- ── Products Tab ──────────────────────────────────────────────── -->
+    <section id="tab-products" class="admin-tab-content active">
+      <div class="admin-toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="admin-search" type="text" class="search-input" placeholder="Buscar productos..." />
+        </div>
+        <span id="admin-count" class="admin-count"></span>
+      </div>
+      <div id="admin-product-list" class="admin-product-list"></div>
+    </section>
+
+    <!-- ── Collections Tab ───────────────────────────────────────────── -->
+    <section id="tab-collections" class="admin-tab-content">
+      <div class="admin-toolbar">
+        <button id="btn-add-collection" class="btn btn-gold">+ Nueva Coleccion</button>
+      </div>
+      <div id="admin-collection-list" class="admin-collection-list"></div>
+    </section>
+  </main>
+
+  <!-- ── Product Edit Modal ─────────────────────────────────────────── -->
+  <div id="product-modal" class="overlay" hidden role="dialog" aria-modal="true" aria-label="Editar producto">
+    <div class="modal product-edit-modal">
+      <div class="modal-header">
+        <h3 id="modal-product-title">Editar Producto</h3>
+        <button id="modal-close" class="modal-close" title="Cerrar">&times;</button>
+      </div>
+      <form id="product-form" class="product-form">
+        <input type="hidden" id="form-filename" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="form-name">Nombre</label>
+            <input type="text" id="form-name" required />
+          </div>
+          <div class="form-group">
+            <label for="form-price">Precio</label>
+            <input type="text" id="form-price" placeholder="ej: ₡45,000" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="form-description">Descripcion</label>
+          <textarea id="form-description" rows="3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="form-category">Categoria</label>
+            <select id="form-category">
+              <option value="">Sin categoria</option>
+              <option value="collar">Collar</option>
+              <option value="pulsera">Pulsera</option>
+              <option value="anillo">Anillo</option>
+              <option value="arete">Arete</option>
+              <option value="broche">Broche</option>
+              <option value="rosario">Rosario</option>
+              <option value="conjunto">Conjunto</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-collection">Coleccion</label>
+            <select id="form-collection">
+              <option value="">Sin coleccion</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="form-material">Material</label>
+            <select id="form-material">
+              <option value="">Sin material</option>
+              <option value="oro">Oro</option>
+              <option value="plata">Plata</option>
+              <option value="oro-rosa">Oro Rosa</option>
+              <option value="cristal">Cristal</option>
+              <option value="perla">Perla</option>
+              <option value="hielo">Hilo</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-gemstone">Piedra Preciosa</label>
+            <input type="text" id="form-gemstone" placeholder="ej: Circón, Ruby" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="form-order">Orden</label>
+          <input type="number" id="form-order" min="0" max="9999" value="9999" />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="form-cancel" class="btn btn-ghost">Cancelar</button>
+          <button type="submit" class="btn btn-gold">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Collection Edit Modal ──────────────────────────────────────── -->
+  <div id="collection-modal" class="overlay" hidden role="dialog" aria-modal="true" aria-label="Editar coleccion">
+    <div class="modal collection-edit-modal">
+      <div class="modal-header">
+        <h3 id="modal-collection-title">Nueva Coleccion</h3>
+        <button id="collection-modal-close" class="modal-close" title="Cerrar">&times;</button>
+      </div>
+      <form id="collection-form" class="product-form">
+        <input type="hidden" id="col-form-slug" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="col-form-name">Nombre</label>
+            <input type="text" id="col-form-name" required />
+          </div>
+          <div class="form-group">
+            <label for="col-form-order">Orden</label>
+            <input type="number" id="col-form-order" min="0" max="9999" value="9999" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="col-form-description">Descripcion</label>
+          <textarea id="col-form-description" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="col-form-parent">Coleccion Padre</label>
+          <select id="col-form-parent">
+            <option value="">Ninguna (raiz)</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="col-form-cancel" class="btn btn-ghost">Cancelar</button>
+          <button type="submit" class="btn btn-gold">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden>
+    <div class="toast-bar"></div>
+    <span class="toast-text"></span>
+    <button class="toast-close" id="toast-close">&times;</button>
+  </div>
+
+  <!-- ── Login Overlay ─────────────────────────────────────────────── -->
+  <div id="login-overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Iniciar sesion">
+    <div class="modal login-modal">
+      <div class="modal-header">
+        <h3>Iniciar Sesion</h3>
+      </div>
+      <form id="login-form" class="product-form">
+        <div class="form-group">
+          <label for="login-user">Usuario</label>
+          <input type="text" id="login-user" required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="login-pass">Contrasena</label>
+          <input type="password" id="login-pass" required autocomplete="current-password" />
+        </div>
+        <p id="login-error" class="login-error" hidden></p>
+        <div class="form-actions">
+          <a href="/" class="btn btn-ghost">Volver</a>
+          <button type="submit" class="btn btn-gold">Entrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>
