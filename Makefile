@@ -18,8 +18,8 @@ install: ## Install dependencies
 	$(NPM) install
 
 .PHONY: dev
-dev: ## Start dev server (foreground)
-	$(NODE) server.js
+dev: ## Start dev server with auto-reload (foreground)
+	$(NPM) exec -- nodemon server.js
 
 .PHONY: start
 start: ## Start server in background
