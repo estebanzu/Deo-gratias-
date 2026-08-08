@@ -31,8 +31,8 @@ self.addEventListener('fetch', (e) => {
   // Skip non-GET and API calls
   if (request.method !== 'GET' || url.pathname.startsWith('/api/')) return;
 
-  // Network-first for images
-  if (url.pathname.startsWith('/images/')) {
+  // Network-first for images (local or Cloudinary)
+  if (url.pathname.startsWith('/images/') || url.hostname.includes('cloudinary.com')) {
     e.respondWith(
       fetch(request)
         .then((res) => {

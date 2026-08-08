@@ -5,7 +5,8 @@ const multer = require('multer');
 const config = require('./config');
 const { generatePDF } = require('./lib/pdf-generator');
 const metadata = require('./lib/metadata');
-const { ensureThumb, thumbExists, getThumbUrl, getThumbDir } = require('./lib/thumbnails');
+const { getThumbUrl } = require('./lib/thumbnails');
+const cloudinaryApi = require('./lib/cloudinary');
 const collections = require('./lib/collections');
 const presets = require('./lib/presets');
 const favorites = require('./lib/favorites');
@@ -36,46 +37,35 @@ function invalidateCache() {
   imageCache = { data: null, ts: 0 };
 }
 
-function getCachedImages() {
+async function getCachedImages() {
   const now = Date.now();
   if (imageCache.data && now - imageCache.ts < CACHE_TTL) {
     return imageCache.data;
   }
 
-  const dir = path.join(__dirname, config.imagesDir);
-  if (!fs.existsSync(dir)) {
+  const allMeta = metadata.readAll();
+
+  let resources;
+  try {
+    resources = await cloudinaryApi.listImages();
+  } catch (err) {
+    console.error('Cloudinary list error:', err.message);
     return { images: [], total: 0 };
   }
 
-  const allMeta = metadata.readAll();
-
-  const files = fs.readdirSync(dir).filter((file) => {
-    const ext = path.extname(file).toLowerCase();
-    const supported = config.supportedExtensions.includes(ext);
-    if (!supported) return false;
-
-    try {
-      const stats = fs.statSync(path.join(dir, file));
-      return stats.size >= 1024 && stats.size <= config.maxImageSize;
-    } catch {
-      return false;
-    }
-  });
-
-  const images = files
-    .sort((a, b) => a.localeCompare(b))
-    .map((file) => {
-      const ext = path.extname(file).toLowerCase();
+  const images = resources
+    .map((res) => {
+      const filename = cloudinaryApi.filenameFromPublicId(res.public_id);
+      const ext = path.extname(filename).toLowerCase();
       const defaultName = path
-        .basename(file, ext)
+        .basename(filename, ext)
         .replace(/[-_]+/g, ' ')
         .replace(/\b\w/g, (c) => c.toUpperCase());
 
-      const meta = allMeta[file] || {};
-      const hasThumb = thumbExists(path.join(__dirname, config.imagesDir), file);
+      const meta = allMeta[filename] || {};
 
       return {
-        filename: file,
+        filename,
         name: meta.name || defaultName,
         description: meta.description || '',
         price: meta.price || '',
@@ -84,11 +74,12 @@ function getCachedImages() {
         material: meta.material || '',
         gemstone: meta.gemstone || '',
         order: meta.order ?? 9999,
-        url: `/images/${encodeURIComponent(file)}`,
-        thumbUrl: hasThumb ? getThumbUrl(file) : null,
+        url: cloudinaryApi.fullUrl(filename),
+        thumbUrl: getThumbUrl(filename),
         ext,
       };
-    });
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const result = { images, total: images.length };
   imageCache = { data: result, ts: now };
@@ -97,14 +88,13 @@ function getCachedImages() {
 
 // ── Static files with caching headers ───────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
-app.use('/images', express.static(path.join(__dirname, config.imagesDir), { maxAge: '7d' }));
 app.use('/output', express.static(path.join(__dirname, config.pdf.outputDir), { maxAge: '1h' }));
 
 app.use(express.json());
 
 // ── API: List available images with metadata ─────────────────────────────────
-app.get('/api/images', (_req, res) => {
-  res.json(getCachedImages());
+app.get('/api/images', async (_req, res) => {
+  res.json(await getCachedImages());
 });
 
 // ── API: Get single product metadata ─────────────────────────────────────────
@@ -115,10 +105,10 @@ app.get('/api/products/:filename', (req, res) => {
 });
 
 // ── API: Update product metadata ─────────────────────────────────────────────
-app.put('/api/products/:filename', (req, res) => {
+app.put('/api/products/:filename', async (req, res) => {
   const { filename } = req.params;
-  const dir = path.join(__dirname, config.imagesDir);
-  if (!fs.existsSync(path.join(dir, filename))) {
+  const exists = await cloudinaryApi.imageExists(filename);
+  if (!exists) {
     return res.status(404).json({ error: 'Image not found' });
   }
 
@@ -174,53 +164,56 @@ app.post('/api/images', upload.single('image'), async (req, res) => {
 
   const ext = path.extname(req.file.originalname).toLowerCase();
   const safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_').toLowerCase();
-  const dest = path.join(__dirname, config.imagesDir, safeName);
 
-  fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.renameSync(req.file.path, dest);
+  try {
+    const result = await cloudinaryApi.uploadImage(req.file.path, safeName);
 
-  // Generate thumbnail
-  await ensureThumb(path.join(__dirname, config.imagesDir), safeName);
+    // Clean up temp file
+    try { fs.unlinkSync(req.file.path); } catch {}
 
-  // Save any metadata sent with the upload
-  const metaUpdates = {};
-  if (req.body.name) metaUpdates.name = req.body.name;
-  if (req.body.category) metaUpdates.category = req.body.category;
-  if (req.body.collection) metaUpdates.collection = req.body.collection;
-  if (Object.keys(metaUpdates).length > 0) {
-    metadata.upsert(safeName, metaUpdates);
+    // Save any metadata sent with the upload
+    const metaUpdates = {};
+    if (req.body.name) metaUpdates.name = req.body.name;
+    if (req.body.category) metaUpdates.category = req.body.category;
+    if (req.body.collection) metaUpdates.collection = req.body.collection;
+    if (Object.keys(metaUpdates).length > 0) {
+      metadata.upsert(safeName, metaUpdates);
+    }
+
+    invalidateCache();
+
+    res.json({
+      success: true,
+      image: {
+        filename: safeName,
+        name:
+          metaUpdates.name ||
+          safeName.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        url: result.secure_url,
+        thumbUrl: getThumbUrl(safeName),
+        ext,
+      },
+    });
+  } catch (err) {
+    try { fs.unlinkSync(req.file.path); } catch {}
+    console.error('Cloudinary upload error:', err.message);
+    res.status(500).json({ error: 'Failed to upload image' });
   }
-
-  invalidateCache();
-
-  res.json({
-    success: true,
-    image: {
-      filename: safeName,
-      name:
-        metaUpdates.name ||
-        safeName.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-      url: `/images/${encodeURIComponent(safeName)}`,
-      thumbUrl: getThumbUrl(safeName),
-      ext,
-    },
-  });
 });
 
 // ── API: Delete image ────────────────────────────────────────────────────────
-app.delete('/api/images/:filename', (req, res) => {
-  const filepath = path.join(__dirname, config.imagesDir, req.params.filename);
-  if (!fs.existsSync(filepath)) {
+app.delete('/api/images/:filename', async (req, res) => {
+  const exists = await cloudinaryApi.imageExists(req.params.filename);
+  if (!exists) {
     return res.status(404).json({ error: 'Image not found' });
   }
 
-  fs.unlinkSync(filepath);
-
-  // Remove thumbnail if exists
-  const thumbDir = getThumbDir(path.join(__dirname, config.imagesDir));
-  const base = path.basename(req.params.filename, path.extname(req.params.filename));
-  const thumbPath = path.join(thumbDir, `${base}.webp`);
-  if (fs.existsSync(thumbPath)) fs.unlinkSync(thumbPath);
+  try {
+    await cloudinaryApi.deleteImage(req.params.filename);
+  } catch (err) {
+    console.error('Cloudinary delete error:', err.message);
+    return res.status(500).json({ error: 'Failed to delete image' });
+  }
 
   metadata.remove(req.params.filename);
   invalidateCache();
@@ -230,11 +223,6 @@ app.delete('/api/images/:filename', (req, res) => {
 // ── API: Generate PDF ────────────────────────────────────────────────────────
 app.post('/api/generate-pdf', async (req, res) => {
   try {
-    const dir = path.join(__dirname, config.imagesDir);
-    if (!fs.existsSync(dir)) {
-      return res.status(400).json({ error: 'Images directory not found' });
-    }
-
     const allMeta = metadata.readAll();
 
     // PDF options from client
@@ -247,10 +235,14 @@ app.post('/api/generate-pdf', async (req, res) => {
       filenames, // optional: array of filenames to include (selective export)
     } = req.body || {};
 
-    let files = fs.readdirSync(dir).filter((file) => {
-      const ext = path.extname(file).toLowerCase();
-      return config.supportedExtensions.includes(ext);
-    });
+    let resources;
+    try {
+      resources = await cloudinaryApi.listImages();
+    } catch (err) {
+      return res.status(400).json({ error: 'Failed to fetch images from Cloudinary' });
+    }
+
+    let files = resources.map((res) => cloudinaryApi.filenameFromPublicId(res.public_id));
 
     // Selective export: filter to only requested filenames
     if (Array.isArray(filenames) && filenames.length > 0) {
@@ -280,7 +272,7 @@ app.post('/api/generate-pdf', async (req, res) => {
           category: meta.category || '',
           material: meta.material || '',
           gemstone: meta.gemstone || '',
-          url: path.join(__dirname, config.imagesDir, file),
+          url: cloudinaryApi.fullUrl(file),
         };
       });
 
@@ -462,6 +454,6 @@ app.use((err, _req, res, next) => {
 // ── Start server ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`\n  ✦ Deo Gratias Catalog running at http://localhost:${PORT}\n`);
-  console.log(`  Place jewelry images in:  ./${config.imagesDir}/`);
+  console.log(`  Images hosted on Cloudinary (folder: ${config.cloudinary.folder})`);
   console.log(`  Supported formats:        ${config.supportedExtensions.join(', ')}\n`);
 });

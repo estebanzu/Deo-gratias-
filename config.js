@@ -11,6 +11,13 @@ module.exports = {
   supportedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
   maxImageSize: 10 * 1024 * 1024,
 
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+    apiKey: process.env.CLOUDINARY_API_KEY || '',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
+    folder: process.env.CLOUDINARY_FOLDER || 'deo-gratias',
+  },
+
   colors: {
     darkBg: '#080808',
     darkSurface: '#111111',
