@@ -606,27 +606,33 @@ body.theme-transitioning::before {
   font-weight: 300;
   overflow: hidden;
   position: relative;
+}
+
+.catalog-title::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
   background: linear-gradient(
     90deg,
-    var(--text-primary) 0%,
-    var(--text-primary) 40%,
-    var(--accent) 50%,
-    var(--text-primary) 60%,
-    var(--text-primary) 100%
+    transparent 0%,
+    rgba(232, 184, 75, 0.4) 40%,
+    rgba(232, 184, 75, 0.8) 50%,
+    rgba(232, 184, 75, 0.4) 60%,
+    transparent 100%
   );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
   animation: textShine 4s ease-in-out infinite;
+  pointer-events: none;
 }
 
 @keyframes textShine {
-  0%, 100% {
-    background-position: 150% center;
+  0% {
+    left: -100%;
   }
-  50% {
-    background-position: -50% center;
+  50%, 100% {
+    left: 150%;
   }
 }
 
