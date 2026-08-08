@@ -1927,6 +1927,60 @@ body.theme-transitioning::before {
   color: var(--error);
 }
 
+/* ── WhatsApp Button ──────────────────────────────────────────────── */
+.product-whatsapp {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #25d366;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  opacity: 0;
+  transition: var(--transition-all);
+  text-decoration: none;
+}
+
+.product-card:hover .product-whatsapp {
+  opacity: 1;
+}
+
+.product-whatsapp:hover {
+  background: #25d366;
+  color: #fff;
+  transform: scale(1.15);
+}
+
+.lightbox-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 20px;
+  background: #25d366;
+  color: #fff;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: var(--transition-all);
+}
+
+.lightbox-whatsapp:hover {
+  background: #1da851;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
+}
+
 /* ── Gold Shimmer Animation ────────────────────────────────────────── */
 @keyframes goldShimmer {
   0% {
