@@ -662,6 +662,45 @@ body.theme-transitioning::before {
   }
 }
 
+/* ── Brand Story ─────────────────────────────────────────────────── */
+.brand-story {
+  text-align: center;
+  padding: 0 2rem 4rem;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.brand-story-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.brand-story-line {
+  width: 40px;
+  height: 1px;
+  background: var(--gold-gradient);
+  opacity: 0.4;
+}
+
+.brand-story-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 300;
+}
+
+.brand-story-text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.8;
+  color: var(--text-secondary);
+  font-weight: 300;
+}
+
 .catalog-count {
   text-align: center;
   font-family: var(--font-body);
