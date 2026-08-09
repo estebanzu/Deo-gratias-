@@ -45,6 +45,8 @@ module.exports = {
     user: process.env.ADMIN_USER || 'admin',
     pass: process.env.ADMIN_PASS || 'admin',
   },
+  // JWT secret for auth tokens
+  jwtSecret: process.env.JWT_SECRET || 'supersecretjwt',
 
   pdf: {
     format: 'A4',

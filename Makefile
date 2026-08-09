@@ -23,7 +23,7 @@ dev: ## Start dev server with auto-reload (foreground)
 
 .PHONY: start
 start: ## Start server in background
-	@bash scripts/server.sh start
+	@node server.js & echo $! > .server.pid && echo "Deo Gratias Catalog started  -> http://localhost:${PORT}"
 
 .PHONY: stop
 stop: ## Stop the background server
@@ -106,8 +106,16 @@ format-check: ## Check formatting without writing (CI-friendly)
 lint: ## Run ESLint on server-side code
 	$(NPM) exec -- eslint . --ext .js
 
+.PHONY: scan-secrets
+scan-secrets: ## Scan for hard‑coded secrets using Gitleaks
+	npx --yes gitleaks detect --source=.
+
 .PHONY: check
 check: format-check lint ## Run all checks (format + lint)
+
+.PHONY: review
+review: format lint scan-secrets
+	@echo "All checks passed."
 
 .PHONY: audit
 audit: ## Run npm security audit
@@ -194,3 +202,6 @@ help: ## Show this help message
 	@echo "  make clean          Remove generated output"
 	@echo "  make tree           Show project structure"
 	@echo ""
+.PHONY: deploy
+
+	@bash -c 'set -a; source .env; set +a; vercel --prod --token $$VERCEL_TOKEN'

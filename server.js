@@ -151,19 +151,49 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
 app.use('/output', express.static(path.join(__dirname, config.pdf.outputDir), { maxAge: '1h' }));
 
 app.use(express.json());
+app.use(require('cookie-parser')());
 
 // ── Admin Auth Middleware ────────────────────────────────────────────────────
+// ── Auth & User Management �nconst bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
+const users = require('./lib/users');
+
+// Rate limiter for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 requests per windowMs
+  message: { error: 'Too many requests, please try again later.' },
+});
+
+// JWT verification middleware
+function verifyToken(req, res, next) {
+  const token = req.cookies?.jwt || req.headers['authorization']?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Missing token' });
+  try {
+    const payload = jwt.verify(token, config.jwtSecret);
+    req.user = payload; // { id, role, email }
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+// Role-based access middleware
+function requireRole(...allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user) return res.status(401).json({ error: 'Unauthenticated' });
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+  };
+}
+
+// Replace legacy adminAuth with JWT based auth for protected routes
 function adminAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Basic ')) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  const decoded = Buffer.from(authHeader.split(' ')[1], 'base64').toString();
-  const [user, pass] = decoded.split(':');
-  if (user === config.admin.user && pass === config.admin.pass) {
-    return next();
-  }
-  return res.status(401).json({ error: 'Invalid credentials' });
+  // admin only via JWT role check
+  return requireRole('admin')(req, res, next);
 }
 
 // ── Static Pages ────────────────────────────────────────────────────────────
@@ -208,7 +238,7 @@ app.get('/api/products/:filename', (req, res) => {
 });
 
 // ── API: Update product metadata ─────────────────────────────────────────────
-app.put('/api/products/:filename', adminAuth, async (req, res) => {
+app.put('/api/products/:filename', verifyToken, requireRole('admin', 'editor'), async (req, res) => {
   const { filename } = req.params;
   const exists = await cloudinaryApi.imageExists(filename);
   if (!exists) {
@@ -235,25 +265,41 @@ app.put('/api/products/:filename', adminAuth, async (req, res) => {
   res.json(saved);
 });
 
-// ── API: Batch reorder ──────────────────────────────────────────────────────
-app.post('/api/reorder', (req, res) => {
-  const { orders } = req.body;
-  if (!Array.isArray(orders)) {
-    return res.status(400).json({ error: 'orders must be an array' });
+// ── Bulk edit ────────────────────────────────────────────────────────
+app.post('/api/bulk-edit', verifyToken, requireRole('admin', 'editor'), async (req, res) => {
+  const { updates } = req.body; // [{filename, fields: {...}}]
+  if (!Array.isArray(updates)) {
+    return res.status(400).json({ error: 'updates must be an array' });
   }
-
-  for (const item of orders) {
-    if (item.filename && typeof item.order === 'number') {
-      metadata.upsert(item.filename, { order: item.order });
-    }
+  const results = [];
+  for (const upd of updates) {
+    const { filename, fields } = upd;
+    if (!filename || typeof fields !== 'object') continue;
+    const saved = metadata.upsert(filename, fields);
+    results.push({ filename, saved });
   }
+  invalidateCache();
+  res.json({ results });
+});
 
+// ── Reorder persistence ────────────────────────────────────────────────
+app.post('/api/reorder', verifyToken, requireRole('admin', 'editor'), (req, res) => {
+  const { orderedIds } = req.body; // array of product IDs in new order
+  if (!Array.isArray(orderedIds)) {
+    return res.status(400).json({ error: 'orderedIds must be an array' });
+  }
+  orderedIds.forEach((id, idx) => {
+    metadata.upsert(id, { order: idx });
+  });
   invalidateCache();
   res.json({ success: true });
 });
 
+// ── API: Batch reorder ──────────────────────────────────────────────────────
+// Removed duplicate unprotected reorder endpoint; protected version retained above
+
 // ── API: Delete product metadata ─────────────────────────────────────────────
-app.delete('/api/products/:filename', adminAuth, (req, res) => {
+app.delete('/api/products/:filename', verifyToken, requireRole('admin'), (req, res) => {
   metadata.remove(req.params.filename);
   invalidateCache();
   res.json({ success: true });
@@ -564,7 +610,7 @@ app.get('/api/collections/:slug', (req, res) => {
   res.json(col);
 });
 
-app.post('/api/collections', adminAuth, (req, res) => {
+app.post('/api/collections', verifyToken, requireRole('admin'), (req, res) => {
   const { name, description, coverImage, parent, order } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
   const slug = name
@@ -576,26 +622,48 @@ app.post('/api/collections', adminAuth, (req, res) => {
   res.status(201).json(result);
 });
 
-app.put('/api/collections/:slug', adminAuth, (req, res) => {
+app.put('/api/collections/:slug', verifyToken, requireRole('admin'), (req, res) => {
   const result = collections.update(req.params.slug, req.body);
   if (!result) return res.status(404).json({ error: 'Collection not found' });
   res.json(result);
 });
 
-app.delete('/api/collections/:slug', adminAuth, (req, res) => {
+app.delete('/api/collections/:slug', verifyToken, requireRole('admin'), (req, res) => {
   const ok = collections.remove(req.params.slug);
   if (!ok) return res.status(404).json({ error: 'Collection not found' });
   res.json({ success: true });
 });
 
 // ── API: Admin Login ────────────────────────────────────────────────────────
-app.post('/api/login', (req, res) => {
-  const { user, pass } = req.body;
-  if (user === config.admin.user && pass === config.admin.pass) {
-    const token = Buffer.from(`${user}:${pass}`).toString('base64');
-    return res.json({ success: true, token });
-  }
-  return res.status(401).json({ error: 'Invalid credentials' });
+// ── User Registration & Login (JWT) �napp.post('/api/register', authLimiter, async (req, res) => {
+  const { email, password, role } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  const existing = await users.findByEmail(email);
+  if (existing) return res.status(409).json({ error: 'User already exists' });
+  const hashed = await bcrypt.hash(password, 10);
+  const newUser = await users.create({ email, password: hashed, role: role || 'viewer' });
+  const token = jwt.sign({ id: newUser.id, email: newUser.email, role: newUser.role }, config.jwtSecret, { expiresIn: '1h' });
+  res
+    .cookie('jwt', token, { httpOnly: true, sameSite: 'strict' })
+    .json({ success: true, user: { email: newUser.email, role: newUser.role } });
+});
+
+app.post('/api/login', authLimiter, async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  const user = await users.findByEmail(email);
+  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+  const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, config.jwtSecret, { expiresIn: '1h' });
+  res
+    .cookie('jwt', token, { httpOnly: true, sameSite: 'strict' })
+    .json({ success: true, user: { email: user.email, role: user.role } });
+});
+
+// Logout endpoint
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('jwt').json({ success: true });
 });
 
 // ── Multer error handler ─────────────────────────────────────────────────────
@@ -610,8 +678,11 @@ app.use((err, _req, res, next) => {
 });
 
 // ── Start server ─────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n  ✦ Deo Gratias Catalog running at http://localhost:${PORT}\n`);
-  console.log(`  Images hosted on Cloudinary (folder: ${config.cloudinary.folder})`);
-  console.log(`  Supported formats:        ${config.supportedExtensions.join(', ')}\n`);
-});
+// Export the Express app for serverless platforms (e.g., Vercel)
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`  Deo Gratias Catalog started  -> http://localhost:${PORT}`));
+}
+
+

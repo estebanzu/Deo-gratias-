@@ -7,20 +7,20 @@
 
 ## Phase 10 — Multi-User & Authentication
 
-- [ ] **User model** — email, password (bcrypt), role (admin/editor/viewer), createdAt
-- [ ] **JWT auth** — login/register endpoints, httpOnly cookie tokens
-- [ ] **Auth middleware** — protect write endpoints, allow public read
-- [ ] **Role-based access** — admin: full access, editor: upload/edit, viewer: read-only
+- [x] **User model** — email, password (bcrypt), role (admin/editor/viewer), createdAt
+- [x] **JWT auth** — login/register endpoints, httpOnly cookie tokens
+- [x] **Auth middleware** — protect write endpoints, allow public read
+- [x] **Role-based access** — admin: full access, editor: upload/edit, viewer: read-only
 - [ ] **User management UI** — admin panel to invite/remove users
 - [ ] **Session persistence** — refresh tokens, auto-logout after inactivity
-- [ ] **Rate limiting** — express-rate-limit on auth endpoints
+- [x] **Rate limiting** — express-rate-limit on auth endpoints
 
 ## Phase 11 — CMS & Content Editing
 
 - [ ] **Inline editing** — click-to-edit product names, descriptions, prices on cards
-- [ ] **Rich text descriptions** — Markdown or TipTap editor for product descriptions
-- [ ] **Bulk edit** — select multiple products to update collection/category/material
-- [ ] **Drag-and-drop reorder persistence** — already exists, add visual reorder handle
+- [ ] **Rich text descriptions** — Markdown or TipPad editor for product descriptions
+- [x] **Bulk edit** — select multiple products to update collection/category/material
+- [x] **Drag-and-drop reorder persistence** — already exists, add visual reorder handle
 - [ ] **Undo/redo** — local history stack for metadata changes
 - [ ] **Image crop/rotate** — client-side image editing before upload (Cropper.js)
 - [ ] **Batch upload** — multi-file upload with progress bars

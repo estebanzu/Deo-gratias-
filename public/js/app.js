@@ -667,8 +667,8 @@
                 img.addEventListener(
                   'error',
                   () => {
-                    img.parentElement.innerHTML =
-                      '<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;">Imagen no disponible</div>';
+                    // Use global error handler to display consistent placeholder
+                    window.handleImageError(img);
                   },
                   { once: true }
                 );

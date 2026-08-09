@@ -37,28 +37,28 @@
 
 ### Critical Issues
 
-| # | Issue | Severity | Impact | Status |
-|---|-------|----------|--------|--------|
-| 1 | Font loaded via local TTF — fails silently if file missing | High | Typography breaks | ✅ Fixed — Google Fonts with fallbacks |
-| 2 | No defined type scale — 12+ arbitrary font sizes | Medium | Visual inconsistency | ✅ Fixed — 9-step modular scale with `clamp()` |
-| 3 | No spacing system — arbitrary padding/margins everywhere | Medium | Layout inconsistency | ✅ Fixed — 13-step spacing scale |
-| 4 | Many interactive elements lack `focus-visible` styles | High | Accessibility | ✅ Fixed — Global + per-component |
-| 5 | No skip-to-content link | High | Accessibility | ✅ Fixed |
-| 6 | SVG icons have no accessible names | Medium | Screen readers | ⚠️ Partial — some have aria-label |
-| 7 | No focus trap in modals (lightbox, upload, PDF) | High | Accessibility | ❌ Not implemented |
-| 8 | Toast notification z-index conflicts with back-to-top | Low | UX overlap | ✅ Fixed |
-| 9 | No success/warning color tokens defined | Medium | Incomplete design system | ✅ Fixed — All 4 semantic colors + light theme |
-| 10 | Border-radius inconsistent (2px, 3px, 4px mixed) | Low | Visual inconsistency | ✅ Fixed — 7-step radius system |
-| 11 | No consistent elevation/shadow system | Medium | Visual hierarchy | ✅ Fixed — 5-step elevation + light theme |
-| 12 | Light theme accent #b4823c has 3.2:1 contrast on white | High | WCAG AA fail | ✅ Fixed — `#a67c2e` (4.6:1) |
-| 13 | No responsive type scale — headings don't scale on mobile | Medium | Mobile UX | ✅ Fixed — Fluid `clamp()` scaling |
-| 14 | No `prefers-color-scheme` for OS-level theme detection | Low | User convenience | ⚠️ Partial — localStorage only |
-| 15 | No aria-live regions for dynamic content updates | Medium | Screen readers | ❌ Not implemented |
-| 16 | Cards show broken image icon on load failure | Medium | UX | ❌ Not implemented |
-| 17 | No loading state for PDF generation beyond spinner | Low | Feedback | ✅ Fixed — Modal with spinner |
-| 18 | Custom cursor JS runs on every mousemove (performance) | Low | Performance | ✅ Fixed — throttled |
-| 19 | `localStorage` key uses app name — no namespacing | Low | Future-proofing | ✅ Fixed — `dg-` prefix |
-| 20 | Hero section padding too large on mobile | Low | Mobile layout | ✅ Fixed — Responsive padding |
+| #   | Issue                                                      | Severity | Impact                   | Status                                        |
+| -----| ------------------------------------------------------------| ----------| --------------------------| -----------------------------------------------|
+| 1   | Font loaded via local TTF — fails silently if file missing | High     | Typography breaks        | ✅ Fixed — Google Fonts with fallbacks         |
+| 2   | No defined type scale — 12+ arbitrary font sizes           | Medium   | Visual inconsistency     | ✅ Fixed — 9-step modular scale with `clamp()` |
+| 3   | No spacing system — arbitrary padding/margins everywhere   | Medium   | Layout inconsistency     | ✅ Fixed — 13-step spacing scale               |
+| 4   | Many interactive elements lack `focus-visible` styles      | High     | Accessibility            | ✅ Fixed — Global + per-component              |
+| 5   | No skip-to-content link                                    | High     | Accessibility            | ✅ Fixed                                       |
+| 6   | SVG icons have no accessible names                         | Medium   | Screen readers           | ⚠️ Partial — some have aria-label              |
+| 7   | No focus trap in modals (lightbox, upload, PDF)            | High     | Accessibility            | ❌ Not implemented                             |
+| 8   | Toast notification z-index conflicts with back-to-top      | Low      | UX overlap               | ✅ Fixed                                       |
+| 9   | No success/warning color tokens defined                    | Medium   | Incomplete design system | ✅ Fixed — All 4 semantic colors + light theme |
+| 10  | Border-radius inconsistent (2px, 3px, 4px mixed)           | Low      | Visual inconsistency     | ✅ Fixed — 7-step radius system                |
+| 11  | No consistent elevation/shadow system                      | Medium   | Visual hierarchy         | ✅ Fixed — 5-step elevation + light theme      |
+| 12  | Light theme accent #b4823c has 3.2:1 contrast on white     | High     | WCAG AA fail             | ✅ Fixed — `#a67c2e` (4.6:1)                   |
+| 13  | No responsive type scale — headings don't scale on mobile  | Medium   | Mobile UX                | ✅ Fixed — Fluid `clamp()` scaling             |
+| 14  | No `prefers-color-scheme` for OS-level theme detection     | Low      | User convenience         | ⚠️ Partial — localStorage only                 |
+| 15  | No aria-live regions for dynamic content updates           | Medium   | Screen readers           | ❌ Not implemented                             |
+| 16  | Cards show broken image icon on load failure               | Medium   | UX                       | ❌ Not implemented                             |
+| 17  | No loading state for PDF generation beyond spinner         | Low      | Feedback                 | ✅ Fixed — Modal with spinner                  |
+| 18  | Custom cursor JS runs on every mousemove (performance)     | Low      | Performance              | ✅ Fixed — throttled                           |
+| 19  | `localStorage` key uses app name — no namespacing          | Low      | Future-proofing          | ✅ Fixed — `dg-` prefix                        |
+| 20  | Hero section padding too large on mobile                   | Low      | Mobile layout            | ✅ Fixed — Responsive padding                  |
 
 ---
 
