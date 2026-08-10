@@ -1,13 +1,5 @@
 {
   "version": 2,
   "builds": [{ "src": "api/index.js", "use": "@vercel/node" }],
-  "routes": [
-    { "src": "/css/(.*)", "dest": "/public/css/$1", "headers": { "Cache-Control": "public, max-age=31536000, immutable" } },
-    { "src": "/js/(.*)", "dest": "/public/js/$1", "headers": { "Cache-Control": "public, max-age=31536000, immutable" } },
-    { "src": "/fonts/(.*)", "dest": "/public/fonts/$1", "headers": { "Cache-Control": "public, max-age=31536000, immutable" } },
-    { "src": "/images/(.*)", "dest": "/public/images/$1", "headers": { "Cache-Control": "public, max-age=86400" } },
-    { "src": "/(.*\\.html)", "dest": "/public/$1", "headers": { "Cache-Control": "public, max-age=3600" } },
-    { "src": "/(manifest\\.json|sw\\.js|robots\\.txt)", "dest": "/public/$1", "headers": { "Cache-Control": "public, max-age=3600" } },
-    { "src": "/(.*)", "dest": "api/index.js" }
-  ]
+  "routes": [{ "src": "/(.*)", "dest": "api/index.js" }]
 }

@@ -151,6 +151,9 @@ async function getCachedImages() {
 }
 
 // ── Static files with caching headers ───────────────────────────────────────
+app.use('/css', express.static(path.join(__dirname, 'public/css'), { maxAge: '1y', immutable: true }));
+app.use('/js', express.static(path.join(__dirname, 'public/js'), { maxAge: '1y', immutable: true }));
+app.use('/fonts', express.static(path.join(__dirname, 'public/fonts'), { maxAge: '1y', immutable: true }));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
 app.use('/output', express.static(outputDir(), { maxAge: '1h' }));
 
