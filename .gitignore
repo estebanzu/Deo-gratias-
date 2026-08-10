@@ -14,3 +14,4 @@ data/webhooks.json
 Photos-1-001/
 .vercel
 .env*
+tmp_home/
