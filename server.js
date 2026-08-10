@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const compression = require('compression');
 const config = require('./config');
 const { outputDir } = require('./lib/storage');
 const { generatePDF } = require('./lib/pdf-generator');
@@ -16,6 +17,8 @@ const webhooks = require('./lib/webhooks');
 
 const app = express();
 const PORT = config.port;
+
+app.use(compression());
 
 const upload = multer({
   dest: path.join(outputDir(), 'uploads'),
