@@ -2,4 +2,14 @@
 
 deploy:
 	@echo "Deploying to Vercel..."
-	HOME=$(PWD)/tmp_home vercel --prod --token $(VERCEL_TOKEN)
+	@if [ -f .env ]; then \
+		TOKEN=$$(grep '^VERCEL_TOKEN=' .env | tail -1 | cut -d= -f2- | tr -d '[:space:]'); \
+		while IFS= read -r line || [ -n "$$line" ]; do \
+			case "$$line" in \#*|"") continue ;; esac; \
+			key=$$(echo "$$line" | cut -d= -f1); \
+			value=$$(echo "$$line" | cut -d= -f2-); \
+			echo "Setting $$key"; \
+			echo "$$value" | HOME=$(PWD)/tmp_home vercel env add $$key production --yes --force --token "$$TOKEN" 2>&1 || true; \
+		done < .env; \
+	fi
+	HOME=$(PWD)/tmp_home vercel --prod --token "$$(grep '^VERCEL_TOKEN=' .env | tail -1 | cut -d= -f2- | tr -d '[:space:]')"

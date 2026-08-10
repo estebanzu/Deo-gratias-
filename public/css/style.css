@@ -2227,6 +2227,63 @@ body.theme-transitioning::before {
   box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
 }
 
+.lightbox-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.lightbox-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: var(--transition-all);
+}
+
+.lightbox-phone:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(232, 184, 75, 0.15);
+}
+
+.lightbox-disclaimer {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(232, 184, 75, 0.08);
+  border: 1px solid rgba(232, 184, 75, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.footer-disclaimer {
+  margin: 0 0 var(--space-4);
+  padding: 10px 16px;
+  background: rgba(232, 184, 75, 0.06);
+  border: 1px solid rgba(232, 184, 75, 0.15);
+  border-radius: var(--radius-md);
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  line-height: 1.6;
+  font-style: italic;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* ── Gold Shimmer Animation ────────────────────────────────────────── */
 @keyframes goldShimmer {
   0% {

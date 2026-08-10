@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const config = require('./config');
+const { outputDir } = require('./lib/storage');
 const { generatePDF } = require('./lib/pdf-generator');
 const metadata = require('./lib/metadata');
 const { getThumbUrl } = require('./lib/thumbnails');
@@ -17,7 +18,7 @@ const app = express();
 const PORT = config.port;
 
 const upload = multer({
-  dest: path.join(__dirname, 'uploads'),
+  dest: path.join(outputDir(), 'uploads'),
   limits: { fileSize: config.maxImageSize },
   fileFilter(_req, file, cb) {
     const ext = path.extname(file.originalname).toLowerCase();
@@ -148,13 +149,14 @@ async function getCachedImages() {
 
 // ── Static files with caching headers ───────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
-app.use('/output', express.static(path.join(__dirname, config.pdf.outputDir), { maxAge: '1h' }));
+app.use('/output', express.static(outputDir(), { maxAge: '1h' }));
 
 app.use(express.json());
 app.use(require('cookie-parser')());
 
 // ── Admin Auth Middleware ────────────────────────────────────────────────────
-// ── Auth & User Management �nconst bcrypt = require('bcrypt');
+// ── Auth & User Management ──────────────────────────────────────────────────
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const users = require('./lib/users');
@@ -432,7 +434,7 @@ app.post('/api/generate-pdf', async (req, res) => {
       });
 
     const slug = template !== 'catalog' ? `-${template}` : '';
-    const outputPath = path.join(__dirname, config.pdf.outputDir, `deo-gratias-catalog${slug}.pdf`);
+    const outputPath = path.join(outputDir(), `deo-gratias-catalog${slug}.pdf`);
     const result = await generatePDF(images, outputPath, {
       template,
       columns: parseInt(columns, 10) || config.pdf.columns,
@@ -635,7 +637,8 @@ app.delete('/api/collections/:slug', verifyToken, requireRole('admin'), (req, re
 });
 
 // ── API: Admin Login ────────────────────────────────────────────────────────
-// ── User Registration & Login (JWT) �napp.post('/api/register', authLimiter, async (req, res) => {
+// ── User Registration & Login (JWT) ────────────────────────────────────────
+app.post('/api/register', authLimiter, async (req, res) => {
   const { email, password, role } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
   const existing = await users.findByEmail(email);
