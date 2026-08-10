@@ -9,6 +9,7 @@
     "test": "npx playwright test tests/catalog.spec.js",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.json",
+    "lint:fix": "eslint . --ext .js,.json --fix",
     "scan-secrets": "npx --yes gitleaks detect --source=."
   },
   "dependencies": {
@@ -17,7 +18,7 @@
     "express": "^4.21.0",
     "multer": "^2.2.0",
     "puppeteer": "^23.4.0",
-    "sharp": "^0.35.3",
+
     "bcrypt": "^5.1.0",
     "jsonwebtoken": "^9.0.0",
     "express-rate-limit": "^7.2.0",
@@ -28,7 +29,8 @@
     "@playwright/test": "^1.62.1",
     "eslint": "^8.57.0",
     "nodemon": "^3.1.14",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "sharp": "^0.35.3"
   },
   "prettier": {
     "singleQuote": true,
