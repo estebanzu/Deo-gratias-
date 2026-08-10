@@ -9,6 +9,8 @@
     "test": "npx playwright test tests/catalog.spec.js",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.json",
+    "vercel-build": "npm ci --only=production",
+    "build": "npm run vercel-build",
     "lint:fix": "eslint . --ext .js,.json --fix",
     "scan-secrets": "npx --yes gitleaks detect --source=."
   },

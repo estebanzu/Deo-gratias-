@@ -2,4 +2,4 @@
 
 deploy:
 	@echo "Deploying to Vercel..."
-	vercel --prod
+	HOME=$(PWD)/tmp_home vercel --prod --token REDACTED
