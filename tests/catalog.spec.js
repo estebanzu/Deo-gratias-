@@ -1,4 +1,20 @@
 const { test, expect } = require('@playwright/test');
+require('dotenv').config(); // load ADMIN_PASS etc. so the test matches the server config
+
+// Obtain a JWT admin token for the protected mutation endpoints.
+// The app authenticates with JWT (not Basic auth). Login falls back to the
+// configured bootstrap admin (config.admin) when no user record exists, so the
+// catalog is usable out-of-the-box. The admin password comes from ADMIN_PASS
+// (defaults to 'admin'), matching how the server resolves config.admin.
+async function getAdminAuth(page) {
+  const password = process.env.ADMIN_PASS || 'admin';
+  const res = await page.request.post('/api/login', {
+    data: { email: 'admin', password },
+  });
+  const body = await res.json();
+  if (!body.token) throw new Error('Login failed: ' + JSON.stringify(body));
+  return { Authorization: 'Bearer ' + body.token };
+}
 
 test.describe('Deo Gratias Catalog', () => {
   test.beforeEach(async ({ page }) => {
@@ -238,8 +254,10 @@ test.describe('Deo Gratias Catalog', () => {
   });
 
   test('API product metadata CRUD', async ({ page }) => {
-    const auth = { Authorization: 'Basic ' + Buffer.from('admin:admin').toString('base64') };
-    const listRes = await page.request.get('/api/images');
+    const auth = await getAdminAuth(page);
+    // Fetch ALL products (the API is paginated + sorts by name, so a renamed
+    // product can shift to a later page and vanish from the default page 1).
+    const listRes = await page.request.get('/api/images?limit=1000');
     const { images } = await listRes.json();
     const productId = images[0].id;
 
@@ -260,7 +278,7 @@ test.describe('Deo Gratias Catalog', () => {
     expect(fetched.name).toBe('Test Name');
 
     // List includes metadata
-    const listRes2 = await page.request.get('/api/images');
+    const listRes2 = await page.request.get('/api/images?limit=1000');
     const data2 = await listRes2.json();
     const match = data2.images.find((i) => i.id === productId);
     expect(match.name).toBe('Test Name');
@@ -310,12 +328,14 @@ test.describe('Deo Gratias Catalog', () => {
   // ── Reorder API ─────────────────────────────────────────────────────
 
   test('reorder API updates product order', async ({ page }) => {
+    const auth = await getAdminAuth(page);
     const listRes = await page.request.get('/api/images');
     const { images } = await listRes.json();
     const id1 = images[0].id;
     const id2 = images[1].id;
 
     const reorderRes = await page.request.post('/api/reorder', {
+      headers: auth,
       data: {
         orders: [
           { filename: id1, order: 100 },
@@ -337,6 +357,7 @@ test.describe('Deo Gratias Catalog', () => {
 
     // Reset order
     await page.request.post('/api/reorder', {
+      headers: auth,
       data: {
         orders: [
           { filename: id1, order: images[0].order },
@@ -567,21 +588,33 @@ test.describe('Deo Gratias Catalog', () => {
   });
 
   test('API create and delete collection', async ({ page }) => {
+    const auth = await getAdminAuth(page);
+    // Defensive cleanup so a previous failed run can't leave a stale slug.
+    await page.request
+      .delete('/api/collections/test-col', { headers: auth })
+      .catch(() => {});
     await page.request.post('/api/collections', {
+      headers: auth,
       data: { slug: 'test-col', name: 'Test Collection', description: 'A test' },
     });
     const getRes = await page.request.get('/api/collections/test-col');
     const col = await getRes.json();
     expect(col.name).toBe('Test Collection');
 
-    await page.request.delete('/api/collections/test-col');
+    await page.request.delete('/api/collections/test-col', { headers: auth });
     const delRes = await page.request.get('/api/collections/test-col');
     expect(delRes.status()).toBe(404);
   });
 
   test('API nested collections tree', async ({ page }) => {
-    await page.request.post('/api/collections', { data: { slug: 'parent-col', name: 'Parent' } });
+    const auth = await getAdminAuth(page);
+    // Defensive cleanup of any slugs left by a previous run.
+    for (const slug of ['parent-col', 'child-col']) {
+      await page.request.delete(`/api/collections/${slug}`, { headers: auth }).catch(() => {});
+    }
+    await page.request.post('/api/collections', { headers: auth, data: { slug: 'parent-col', name: 'Parent' } });
     await page.request.post('/api/collections', {
+      headers: auth,
       data: { slug: 'child-col', name: 'Child', parent: 'parent-col' },
     });
     const res = await page.request.get('/api/collections/tree');
@@ -590,8 +623,8 @@ test.describe('Deo Gratias Catalog', () => {
     expect(parent).toBeTruthy();
     expect(parent.children.some((c) => c.slug === 'child-col')).toBe(true);
     // Cleanup
-    await page.request.delete('/api/collections/child-col');
-    await page.request.delete('/api/collections/parent-col');
+    await page.request.delete('/api/collections/child-col', { headers: auth });
+    await page.request.delete('/api/collections/parent-col', { headers: auth });
   });
 
   // ── Phase 12: Presets ────────────────────────────────────────────────

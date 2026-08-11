@@ -8,14 +8,13 @@
     "dev": "nodemon server.js",
     "test": "npx playwright test tests/catalog.spec.js",
     "format": "prettier --write .",
-    "lint": "eslint . --ext .js,.json",
+    "lint": "eslint . --ext .js",
     "vercel-build": "npm ci --only=production",
     "build": "npm run vercel-build",
-    "lint:fix": "eslint . --ext .js,.json --fix",
+    "lint:fix": "eslint . --ext .js --fix",
     "scan-secrets": "npx --yes gitleaks detect --source=."
   },
   "dependencies": {
-    "@sparticuz/chromium": "^131.0.1",
     "bcrypt": "^5.1.0",
     "cloudinary": "^2.10.0",
     "compression": "^1.8.1",

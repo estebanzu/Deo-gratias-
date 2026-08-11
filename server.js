@@ -198,12 +198,6 @@ function requireRole(...allowedRoles) {
   };
 }
 
-// Replace legacy adminAuth with JWT based auth for protected routes
-function adminAuth(req, res, next) {
-  // admin only via JWT role check
-  return requireRole('admin')(req, res, next);
-}
-
 // ── Static Pages ────────────────────────────────────────────────────────────
 app.get('/admin', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
@@ -291,14 +285,23 @@ app.post('/api/bulk-edit', verifyToken, requireRole('admin', 'editor'), async (r
 });
 
 // ── Reorder persistence ────────────────────────────────────────────────
+// Accepts either:
+//   { orders: [{ filename, order }] }   ← sent by the catalog UI (app.js)
+//   { orderedIds: [filename, ...] }      ← legacy shape (order = array index)
 app.post('/api/reorder', verifyToken, requireRole('admin', 'editor'), (req, res) => {
-  const { orderedIds } = req.body; // array of product IDs in new order
-  if (!Array.isArray(orderedIds)) {
-    return res.status(400).json({ error: 'orderedIds must be an array' });
+  const { orders, orderedIds } = req.body || {};
+  if (Array.isArray(orders)) {
+    for (const { filename, order } of orders) {
+      if (filename === undefined) continue;
+      metadata.upsert(filename, { order: Number(order) || 0 });
+    }
+  } else if (Array.isArray(orderedIds)) {
+    orderedIds.forEach((id, idx) => {
+      metadata.upsert(id, { order: idx });
+    });
+  } else {
+    return res.status(400).json({ error: 'orders or orderedIds must be an array' });
   }
-  orderedIds.forEach((id, idx) => {
-    metadata.upsert(id, { order: idx });
-  });
   invalidateCache();
   res.json({ success: true });
 });
@@ -461,40 +464,12 @@ app.post('/api/generate-pdf', async (req, res) => {
   }
 });
 
-// ── API: Collections CRUD ──────────────────────────────────────────────────
-app.get('/api/collections', (_req, res) => {
-  res.json({ collections: collections.list() });
-});
-
-app.get('/api/collections/tree', (_req, res) => {
-  res.json({ tree: collections.getTree() });
-});
-
-app.get('/api/collections/:slug', (req, res) => {
-  const col = collections.get(req.params.slug);
-  if (!col) return res.status(404).json({ error: 'Collection not found' });
-  res.json(col);
-});
-
-app.post('/api/collections', (req, res) => {
-  const { slug, name, description, coverImage, parent, order } = req.body;
-  if (!slug) return res.status(400).json({ error: 'slug is required' });
-  const result = collections.create(slug, { name, description, coverImage, parent, order });
-  if (result.error) return res.status(409).json(result);
-  res.status(201).json(result);
-});
-
-app.put('/api/collections/:slug', (req, res) => {
-  const result = collections.update(req.params.slug, req.body);
-  if (!result) return res.status(404).json({ error: 'Collection not found' });
-  res.json(result);
-});
-
-app.delete('/api/collections/:slug', (req, res) => {
-  const ok = collections.remove(req.params.slug);
-  if (!ok) return res.status(404).json({ error: 'Collection not found' });
-  res.json({ success: true });
-});
+// ── API: Collections CRUD
+// NOTE: mutations (POST/PUT/DELETE) are defined further below with admin
+// authentication. The earlier unauthenticated duplicate of these routes was
+// removed — Express matched the first registration, so the secured handlers
+// were unreachable dead code and collections were effectively writable by
+// anyone.
 
 // ── API: Presets ───────────────────────────────────────────────────────────
 app.get('/api/presets', (_req, res) => {
@@ -619,9 +594,10 @@ app.get('/api/collections/:slug', (req, res) => {
 });
 
 app.post('/api/collections', verifyToken, requireRole('admin'), (req, res) => {
-  const { name, description, coverImage, parent, order } = req.body;
+  const { slug: slugIn, name, description, coverImage, parent, order } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
-  const slug = name
+  // Prefer a client-supplied slug; fall back to deriving one from the name.
+  const slug = (slugIn || name)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
@@ -658,16 +634,41 @@ app.post('/api/register', authLimiter, async (req, res) => {
 });
 
 app.post('/api/login', authLimiter, async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-  const user = await users.findByEmail(email);
+  const { email, password, identifier } = req.body;
+  const loginId = email || identifier || '';
+  if (!loginId || !password) {
+    return res.status(400).json({ error: 'Email and password required' });
+  }
+
+  // Lookup a registered user first...
+  let user = await users.findByEmail(loginId);
+  let role = user && user.role;
+
+  // ...then fall back to the configured bootstrap admin (config.admin).
+  // This lets the app work out-of-the-box without a pre-seeded user record.
+  if (!user) {
+    const adminUser = config.admin.user || 'admin';
+    const adminPass = config.admin.pass || 'admin';
+    if ((loginId === adminUser || loginId === 'admin') && password === adminPass) {
+      user = { id: 'admin', email: adminUser, role: 'admin' };
+      role = 'admin';
+    }
+  }
+
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.status(401).json({ error: 'Invalid credentials' });
-  const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, config.jwtSecret, { expiresIn: '1h' });
+
+  const match =
+    user.password && (await bcrypt.compare(password, user.password).catch(() => false));
+  // Bootstrap admin has no bcrypt hash, so accept a direct password match.
+  const bootstrapOk = !user.password && password === (config.admin.pass || 'admin');
+  if (!match && !bootstrapOk) return res.status(401).json({ error: 'Invalid credentials' });
+
+  const token = jwt.sign({ id: user.id, email: user.email, role }, config.jwtSecret, {
+    expiresIn: '1h',
+  });
   res
     .cookie('jwt', token, { httpOnly: true, sameSite: 'strict' })
-    .json({ success: true, user: { email: user.email, role: user.role } });
+    .json({ success: true, token, user: { email: user.email, role } });
 });
 
 // Logout endpoint

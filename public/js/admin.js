@@ -8,19 +8,6 @@
     return authToken ? { Authorization: 'Basic ' + authToken } : {};
   }
 
-  async function checkAuth() {
-    if (!authToken) return showLogin();
-    try {
-      const res = await fetch('/api/images?limit=1', { headers: getAuthHeaders() });
-      if (!res.ok) {
-        showLogin();
-        return;
-      }
-    } catch {
-      showLogin();
-    }
-  }
-
   function showLogin() {
     document.getElementById('main-content').hidden = true;
     document.getElementById('login-overlay').hidden = false;
