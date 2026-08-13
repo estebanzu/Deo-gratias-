@@ -4,7 +4,7 @@
 > Reference quality: Stripe, Linear, Notion, Vercel, Figma.
 > Brand meaning: "Deo Gratias — taking everything from the hands of Divine Providence."
 
-> **Status:** Most items implemented. See [Implementation Status](#16-implementation-status) for details.
+> **Status:** Nearly all items implemented. See [Implementation Status](#16-implementation-status) for details.
 
 ---
 
@@ -45,7 +45,7 @@
 | 4   | Many interactive elements lack `focus-visible` styles      | High     | Accessibility            | ✅ Fixed — Global + per-component              |
 | 5   | No skip-to-content link                                    | High     | Accessibility            | ✅ Fixed                                       |
 | 6   | SVG icons have no accessible names                         | Medium   | Screen readers           | ⚠️ Partial — some have aria-label              |
-| 7   | No focus trap in modals (lightbox, upload, PDF)            | High     | Accessibility            | ❌ Not implemented                             |
+| 7   | No focus trap in modals (lightbox, upload, PDF)            | High     | Accessibility            | ✅ Fixed — trapFocus/releaseFocus in app.js    |
 | 8   | Toast notification z-index conflicts with back-to-top      | Low      | UX overlap               | ✅ Fixed                                       |
 | 9   | No success/warning color tokens defined                    | Medium   | Incomplete design system | ✅ Fixed — All 4 semantic colors + light theme |
 | 10  | Border-radius inconsistent (2px, 3px, 4px mixed)           | Low      | Visual inconsistency     | ✅ Fixed — 7-step radius system                |
@@ -53,8 +53,8 @@
 | 12  | Light theme accent #b4823c has 3.2:1 contrast on white     | High     | WCAG AA fail             | ✅ Fixed — `#a67c2e` (4.6:1)                   |
 | 13  | No responsive type scale — headings don't scale on mobile  | Medium   | Mobile UX                | ✅ Fixed — Fluid `clamp()` scaling             |
 | 14  | No `prefers-color-scheme` for OS-level theme detection     | Low      | User convenience         | ⚠️ Partial — localStorage only                 |
-| 15  | No aria-live regions for dynamic content updates           | Medium   | Screen readers           | ❌ Not implemented                             |
-| 16  | Cards show broken image icon on load failure               | Medium   | UX                       | ❌ Not implemented                             |
+| 15  | No aria-live regions for dynamic content updates           | Medium   | Screen readers           | ✅ Fixed — catalog-count has aria-live="polite" |
+| 16  | Cards show broken image icon on load failure               | Medium   | UX                       | ✅ Fixed — handleImageError + styled placeholder |
 | 17  | No loading state for PDF generation beyond spinner         | Low      | Feedback                 | ✅ Fixed — Modal with spinner                  |
 | 18  | Custom cursor JS runs on every mousemove (performance)     | Low      | Performance              | ✅ Fixed — throttled                           |
 | 19  | `localStorage` key uses app name — no namespacing          | Low      | Future-proofing          | ✅ Fixed — `dg-` prefix                        |
@@ -75,17 +75,17 @@
 
 ### 4. Focus Management
 ~~Add `focus-visible` styles globally.~~ ✅ Done
-Implement focus traps in modals. ❌ TODO
+~~Implement focus traps in modals.~~ ✅ Done — trapFocus/releaseFocus in app.js
 ~~Add skip-to-content.~~ ✅ Done
 
 ### 5. Elevation System
 ~~Define 5 elevation levels with consistent shadows for cards, modals, dropdowns.~~ ✅ Done
 
 ### 6. Skeleton Loader Enhancement
-Replace basic shimmer with realistic content-matched skeletons (image + text + meta). ❌ TODO
+~~Replace basic shimmer with realistic content-matched skeletons (image + text + meta).~~ ✅ Done — content-matched with staggered delays
 
 ### 7. Image Error States
-Show a styled placeholder on image load failure instead of broken icon. ❌ TODO
+~~Show a styled placeholder on image load failure instead of broken icon.~~ ✅ Done — handleImageError + .product-image-error
 
 ### 8. Responsive Type Scale
 ~~Fluid typography that scales from mobile to desktop using `clamp()`.~~ ✅ Done
@@ -326,35 +326,35 @@ Define consistent hover, focus, active, disabled, loading states for all interac
 
 ### Lightbox
 - **Current:** Crossfade transitions. Keyboard navigation.
-- **Fix:** Add focus trap. ❌ TODO. ~~Add `role="dialog"` and `aria-modal="true"`.~~ ✅ Done. Add image counter "1 / 17". ❌ TODO. Trap Tab key inside. ❌ TODO.
+- **Fix:** ~~Add focus trap.~~ ✅ Done — trapFocus in openLightbox. ~~Add `role="dialog"` and `aria-modal="true"`.~~ ✅ Done. ~~Add image counter "1 / 17".~~ ✅ Done — lightbox-counter element + updateLightboxCounter(). ~~Trap Tab key inside.~~ ✅ Done.
 
 ### Upload Modal
 - **Current:** Drop zone with preview.
-- **Fix:** Add focus trap. ❌ TODO. ~~Add `role="dialog"`.~~ ✅ Done. Improve drop zone visual feedback. ❌ TODO. Add file size validation display. ❌ TODO.
+- **Fix:** ~~Add focus trap.~~ ✅ Done — trapFocus in openUpload. ~~Add `role="dialog"`.~~ ✅ Done. Improve drop zone visual feedback. ❌ TODO. Add file size validation display. ❌ TODO.
 
 ### PDF Settings Modal
 - **Current:** Template selector, columns, margins.
-- **Fix:** Add focus trap. ❌ TODO. ~~Add `role="dialog"`.~~ ✅ Done. Improve radio button styling (custom radios). ❌ TODO. Add preview of layout. ❌ TODO.
+- **Fix:** ~~Add focus trap.~~ ✅ Done — trapFocus in openPdfSettings. ~~Add `role="dialog"`.~~ ✅ Done. ~~Improve radio button styling (custom radios).~~ ✅ Done — custom circle + dot animation. Add preview of layout. ❌ TODO.
 
 ### Toast Notifications
 - **Current:** Slide-in with gold bar.
-- **Fix:** ~~Move above back-to-top button (z-index).~~ ✅ Done. Add auto-dismiss progress bar animation. ❌ TODO. Add swipe-to-dismiss on mobile. ❌ TODO.
+- **Fix:** ~~Move above back-to-top button (z-index).~~ ✅ Done. ~~Add auto-dismiss progress bar animation.~~ ✅ Done — toastCountdown animation. Add swipe-to-dismiss on mobile. ❌ TODO.
 
 ### Search Input
 - **Current:** Basic input with icon.
-- **Fix:** Add clear button (×) when has value. ❌ TODO. ~~Add debounce (already implicit via `input` event).~~ ✅ Done. ~~Add `aria-label`.~~ ✅ Done.
+- **Fix:** ~~Add clear button (×) when has value.~~ ✅ Done — search-clear button with show/hide logic. ~~Add debounce (already implicit via `input` event).~~ ✅ Done. ~~Add `aria-label`.~~ ✅ Done.
 
 ### Filter Chips
 - **Current:** Basic toggle chips.
-- **Fix:** Add `aria-pressed` attribute. ❌ TODO. Add count badge per filter. ❌ TODO. Improve active state visual. ❌ TODO.
+- **Fix:** ~~Add `aria-pressed` attribute.~~ ✅ Done. ~~Add count badge per filter.~~ ✅ Done. ~~Improve active state visual.~~ ✅ Done — box-shadow + count badge color change.
 
 ### Back to Top
 - **Current:** Basic circular button.
-- **Fix:** ~~Add `aria-label="Back to top"`.~~ ✅ Done. Add scroll-to progress indicator ring. ❌ TODO.
+- **Fix:** ~~Add `aria-label="Back to top"`.~~ ✅ Done. ~~Add scroll-to progress indicator ring.~~ ✅ Done — SVG circle with stroke-dashoffset animation.
 
 ### Footer
 - **Current:** Structured with gold dividers.
-- **Fix:** ~~Add actual links (not just text).~~ ✅ Done. Add social icons. ❌ TODO. Add newsletter signup (optional). ❌ TODO.
+- **Fix:** ~~Add actual links (not just text).~~ ✅ Done. ~~Add social icons.~~ ✅ Done — WhatsApp, Instagram, phone icons. Add newsletter signup (optional). ❌ TODO.
 
 ---
 
@@ -724,9 +724,9 @@ function trapFocus(modal) {
 | Phase | Items | Effort | Status |
 |-------|-------|--------|--------|
 | **P0 — Critical** | Google Fonts, type scale, spacing scale, focus-visible, skip link, light theme contrast fix | 2–3 hours | ✅ Done |
-| **P1 — High** | Elevation system, animation tokens, radius system, color completion, skeleton enhancement | 2–3 hours | ✅ Done |
-| **P2 — Medium** | Focus traps, aria-live, image error states, mobile type scale, toast z-index | 2–3 hours | ⚠️ Partial |
-| **P3 — Polish** | Custom radio buttons, filter chip counts, clear search button, footer links | 1–2 hours | ⚠️ Partial |
+| **P1 — High** | Elevation system, animation tokens, radius system, color completion, focus traps, aria-live, image error states | 2–3 hours | ✅ Done |
+| **P2 — Medium** | ~~Skeleton enhancement~~ ✅, ~~toast progress bar~~ ✅, ~~filter chip improvements~~ ✅, image counter, custom radios | 2–3 hours | ⚠️ Partial |
+| **P3 — Polish** | Search clear button, back-to-top ring, footer social icons, disabled/loading states, swipe-to-dismiss | 1–2 hours | ❌ TODO |
 
 ---
 
@@ -734,10 +734,10 @@ function trapFocus(modal) {
 
 | File | Changes |
 |------|---------|
-| `public/index.html` | ~~Google Fonts link~~ ✅, ~~skip link~~ ✅, ~~ARIA attributes~~ ✅, skeleton markup ❌ TODO, ~~dialog roles~~ ✅ |
-| `public/css/style.css` | ~~Type scale~~ ✅, ~~spacing scale~~ ✅, ~~elevation~~ ✅, ~~colors~~ ✅, ~~animation tokens~~ ✅, ~~radius~~ ✅, ~~focus styles~~ ✅, skeleton enhancement ❌ TODO, image error states ❌ TODO |
+| `public/index.html` | ~~Google Fonts link~~ ✅, ~~skip link~~ ✅, ~~ARIA attributes~~ ✅, ~~skeleton markup~~ ✅, ~~dialog roles~~ ✅, aria-live on catalog-count ✅ |
+| `public/css/style.css` | ~~Type scale~~ ✅, ~~spacing scale~~ ✅, ~~elevation~~ ✅, ~~colors~~ ✅, ~~animation tokens~~ ✅, ~~radius~~ ✅, ~~focus styles~~ ✅, ~~skeleton enhancement~~ ✅, ~~image error states~~ ✅, ~~toast progress bar~~ ✅ |
 | `public/css/fonts.css` | ~~Replace local TTF with Google Fonts import~~ ✅ |
-| `public/js/app.js` | Focus trap ❌ TODO, aria-live updates ❌ TODO, image error handler ❌ TODO, debounce ✅, mobile optimizations ✅ |
+| `public/js/app.js` | ~~Focus trap~~ ✅, ~~aria-live updates~~ ✅, ~~image error handler~~ ✅, ~~debounce~~ ✅, ~~mobile optimizations~~ ✅ |
 | `config.js` | ~~Update font references~~ ✅ |
 
 ---
@@ -754,8 +754,8 @@ function trapFocus(modal) {
 - All 4 semantic color tokens (success, warning, error, info) + light theme
 - Global `focus-visible` styles + per-component overrides
 - Skip-to-content link
-- Skeleton loading cards with shimmer
-- Toast notification system
+- Skeleton loading cards with shimmer (content-matched with staggered delays)
+- Toast notification system (with auto-dismiss progress bar animation)
 - `prefers-reduced-motion` support
 - Admin panel with auth
 - Collections system
@@ -763,24 +763,21 @@ function trapFocus(modal) {
 - Product detail page with carousel
 - Pagination (12/page)
 - WhatsApp integration
+- Focus traps in all modals (lightbox, upload, PDF settings)
+- aria-live regions for dynamic content (catalog-count)
+- Image error placeholder (handleImageError + styled .product-image-error)
 
 ### ❌ Remaining Items (Actionable)
-1. **Focus trap in modals** — Lightbox, upload, PDF settings modals need Tab key trapping
-2. **aria-live regions** — Dynamic content updates (pagination, filters, search results)
-3. **Image error placeholder** — Styled fallback when image fails to load
-4. **Skeleton enhancement** — Content-matched skeletons with staggered delays
-5. **Filter chip improvements** — `aria-pressed`, count badges, active state
-6. **Toast auto-dismiss progress bar** — Visual countdown animation
-7. **Image counter in lightbox** — "1 / N" display
-8. **Search clear button** — × button when input has value
-9. **Custom radio buttons** — PDF settings modal styling
-10. **Back-to-top progress ring** — Circular progress indicator
-11. **Footer social icons** — WhatsApp, Instagram, etc.
-12. **Disabled/loading button states** — Visual feedback for async actions
+1. **Disabled/loading button states** — Visual feedback for async actions
+2. **Upload drop zone visual feedback** — Improve drag-over styling
+3. **File size validation display** — Show file size in upload preview
+4. **Swipe-to-dismiss on mobile** — Toast notifications
+5. **PDF layout preview** — Visual preview in settings modal
+6. **Footer newsletter signup** — Optional email capture
 
-### Recommended Next Steps
-1. **Focus traps** (high impact, ~1 hour) — Add Tab key trapping to all modals
-2. **aria-live regions** (high impact, ~30 min) — Add live regions for dynamic content
-3. **Image error states** (medium impact, ~30 min) — Add styled placeholder for broken images
-4. **Skeleton enhancement** (medium impact, ~1 hour) — Content-matched skeletons
-5. **Filter chip improvements** (low impact, ~30 min) — Accessibility + UX polish
+### Recommended Next Steps (Priority Order)
+1. **Disabled/loading button states** (low impact, ~30 min) — Visual feedback for async actions
+2. **Upload drop zone visual feedback** (low impact, ~15 min) — Improve drag-over styling
+3. **File size validation display** (low impact, ~15 min) — Show file size in upload preview
+4. **Swipe-to-dismiss on mobile** (low impact, ~30 min) — Toast notifications
+5. **PDF layout preview** (low impact, ~1 hour) — Visual preview in settings modal

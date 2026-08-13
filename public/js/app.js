@@ -34,6 +34,7 @@
   const lightboxPrev = document.getElementById('lightbox-prev');
   const lightboxNext = document.getElementById('lightbox-next');
   const lightboxHints = document.getElementById('lightbox-hints');
+  const lightboxCounter = document.getElementById('lightbox-counter');
   const uploadOverlay = document.getElementById('upload-overlay');
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('file-input');
@@ -222,8 +223,19 @@
   }
 
   // ── Back to Top (#16) ────────────────────────────────────────────────
+  const backToTopProgress = backToTop.querySelector('.back-to-top-progress');
+  const CIRCUMFERENCE = 2 * Math.PI * 20; // r=20
+
   function updateBackToTop() {
-    if (window.scrollY > 400) {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? Math.min(scrollTop / docHeight, 1) : 0;
+
+    if (backToTopProgress) {
+      backToTopProgress.style.strokeDashoffset = CIRCUMFERENCE * (1 - progress);
+    }
+
+    if (scrollTop > 400) {
       backToTop.classList.add('visible');
     } else {
       backToTop.classList.remove('visible');
@@ -397,10 +409,10 @@
       .map(
         (g) =>
           `<div class="filter-group">${g.values
-            .map(
-              (v) =>
-                `<button class="filter-chip" data-key="${g.key}" data-value="${v}">${v}</button>`
-            )
+            .map((v) => {
+              const count = images.filter((i) => i[g.key] === v).length;
+              return `<button class="filter-chip" data-key="${g.key}" data-value="${v}" aria-pressed="false">${v}<span class="filter-count">${count}</span></button>`;
+            })
             .join('')}</div>`
       )
       .join('');
@@ -412,12 +424,17 @@
         if (activeFilters[key] === value) {
           activeFilters[key] = '';
           chip.classList.remove('active');
+          chip.setAttribute('aria-pressed', 'false');
         } else {
           filterRow
             .querySelectorAll(`.filter-chip[data-key="${key}"]`)
-            .forEach((c) => c.classList.remove('active'));
+            .forEach((c) => {
+              c.classList.remove('active');
+              c.setAttribute('aria-pressed', 'false');
+            });
           activeFilters[key] = value;
           chip.classList.add('active');
+          chip.setAttribute('aria-pressed', 'true');
         }
         updateClearButton();
         applyFiltersAndSort();
@@ -432,7 +449,10 @@
 
   btnClearFilters.addEventListener('click', () => {
     Object.keys(activeFilters).forEach((k) => (activeFilters[k] = ''));
-    filterRow.querySelectorAll('.filter-chip').forEach((c) => c.classList.remove('active'));
+    filterRow.querySelectorAll('.filter-chip').forEach((c) => {
+      c.classList.remove('active');
+      c.setAttribute('aria-pressed', 'false');
+    });
     updateClearButton();
     applyFiltersAndSort();
   });
@@ -809,6 +829,15 @@
   // ── Lightbox with Crossfade (#9, #21) ───────────────────────────────
   const lightboxWhatsapp = document.getElementById('lightbox-whatsapp');
 
+  function updateLightboxCounter() {
+    if (lightboxCounter && filteredImages.length > 1) {
+      lightboxCounter.textContent = `${lightboxIndex + 1} / ${filteredImages.length}`;
+      lightboxCounter.style.display = '';
+    } else if (lightboxCounter) {
+      lightboxCounter.style.display = 'none';
+    }
+  }
+
   function openLightbox(index) {
     lightboxIndex = index;
     const img = filteredImages[index];
@@ -823,6 +852,7 @@
 
     lightboxPrev.style.display = filteredImages.length > 1 ? '' : 'none';
     lightboxNext.style.display = filteredImages.length > 1 ? '' : 'none';
+    updateLightboxCounter();
     document.body.style.overflow = 'hidden';
     trapFocus(lightbox);
 
@@ -862,6 +892,7 @@
       lightboxName.textContent = next.name;
       lightboxDesc.textContent = next.description || '';
       lightboxImg.classList.remove('transitioning');
+      updateLightboxCounter();
     }, 250);
   }
 
@@ -1119,7 +1150,21 @@
     });
   });
   let searchTrackTimer;
+  const searchClear = document.getElementById('search-clear');
+
+  function updateSearchClear() {
+    searchClear.hidden = searchInput.value.length === 0;
+  }
+
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    updateSearchClear();
+    applyFiltersAndSort();
+    searchInput.focus();
+  });
+
   searchInput.addEventListener('input', () => {
+    updateSearchClear();
     applyFiltersAndSort();
     clearTimeout(searchTrackTimer);
     searchTrackTimer = setTimeout(() => {
