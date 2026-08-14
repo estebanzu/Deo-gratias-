@@ -206,6 +206,33 @@
     clearTimeout(toastTimer);
   });
 
+  // Toast swipe-to-dismiss on mobile
+  let toastTouchStartX = 0;
+  let toastTouchCurrentX = 0;
+  toast.addEventListener('touchstart', (e) => {
+    toastTouchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  toast.addEventListener('touchmove', (e) => {
+    toastTouchCurrentX = e.touches[0].clientX;
+    const diff = toastTouchCurrentX - toastTouchStartX;
+    if (diff > 0) {
+      toast.style.transform = `translateX(${diff}px)`;
+      toast.style.opacity = Math.max(0, 1 - diff / 150);
+    }
+  }, { passive: true });
+  toast.addEventListener('touchend', () => {
+    const diff = toastTouchCurrentX - toastTouchStartX;
+    if (diff > 80) {
+      toast.className = 'toast';
+      clearTimeout(toastTimer);
+    } else {
+      toast.style.transform = '';
+      toast.style.opacity = '';
+    }
+    toastTouchStartX = 0;
+    toastTouchCurrentX = 0;
+  });
+
   // ── Scroll Progress (#24) ────────────────────────────────────────────
   const heroEl = document.querySelector('.catalog-hero');
 
@@ -938,8 +965,11 @@
     pendingFiles = accepted;
     uploadPreview.innerHTML = accepted
       .map(
-        (f) =>
-          `<div class="upload-preview-item"><img src="${URL.createObjectURL(f)}" alt="${f.name}" /></div>`
+        (f) => {
+          const sizeKB = (f.size / 1024).toFixed(1);
+          const sizeStr = sizeKB >= 1024 ? (sizeKB / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+          return `<div class="upload-preview-item"><img src="${URL.createObjectURL(f)}" alt="${f.name}" /><span class="upload-file-size">${sizeStr}</span></div>`;
+        }
       )
       .join('');
     uploadPreview.hidden = false;
@@ -949,6 +979,7 @@
   async function uploadFiles() {
     if (pendingFiles.length === 0) return;
     btnUploadConfirm.disabled = true;
+    btnUploadConfirm.classList.add('loading');
     let successCount = 0;
 
     for (const file of pendingFiles) {
@@ -963,6 +994,7 @@
     }
 
     closeUpload();
+    btnUploadConfirm.classList.remove('loading');
     if (successCount > 0) {
       showToast(
         `${successCount} imagen${successCount > 1 ? 's' : ''} subida${successCount > 1 ? 's' : ''}`
@@ -1042,14 +1074,6 @@
     if (pdfExportFilteredCount) pdfExportFilteredCount.textContent = filteredImages.length;
   }
 
-  // ── PDF Settings Modal ─────────────────────────────────────────────
-  function openPdfSettings() {
-    updateSelectionCounts();
-    pdfSettingsOverlay.hidden = false;
-    document.body.style.overflow = 'hidden';
-    trapFocus(pdfSettingsOverlay);
-  }
-
   function closePdfSettings() {
     releaseFocus(pdfSettingsOverlay);
     pdfSettingsOverlay.hidden = true;
@@ -1090,6 +1114,7 @@
     }
 
     btnPDF.disabled = true;
+    btnPDF.classList.add('loading');
     pdfOverlay.hidden = false;
 
     try {
@@ -1115,11 +1140,40 @@
       showToast('La generacion de PDF fallo', true);
     } finally {
       btnPDF.disabled = false;
+      btnPDF.classList.remove('loading');
       pdfOverlay.hidden = true;
     }
   }
 
-  // ── Keyboard Shortcuts (#21) ─────────────────────────────────────────
+  // ── PDF Preview ──────────────────────────────────────────────────
+  const pdfPreviewGrid = document.getElementById('pdf-preview-grid');
+  const pdfPreviewTemplate = document.getElementById('pdf-preview-template');
+  const pdfPreviewCols = document.getElementById('pdf-preview-cols');
+  const pdfPreviewPpp = document.getElementById('pdf-preview-ppp');
+
+  function updatePdfPreview() {
+    const cols = parseInt(pdfColumns.value, 10);
+    const perPage = parseInt(pdfPerPage.value, 10);
+    const template = getSelectedTemplate();
+
+    const templateNames = { catalog: 'Catalogo', 'line-sheet': 'Linea de Productos', lookbook: 'Libro de Looks' };
+    pdfPreviewTemplate.textContent = templateNames[template] || template;
+    pdfPreviewCols.textContent = cols;
+    pdfPreviewPpp.textContent = perPage;
+
+    pdfPreviewGrid.setAttribute('data-cols', cols);
+    pdfPreviewGrid.innerHTML = Array.from({ length: perPage }, () =>
+      '<div class="pdf-preview-cell"></div>'
+    ).join('');
+  }
+
+  function openPdfSettings() {
+    updateSelectionCounts();
+    updatePdfPreview();
+    pdfSettingsOverlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+    trapFocus(pdfSettingsOverlay);
+  }
   document.addEventListener('keydown', (e) => {
     if (!lightbox.hidden) {
       if (e.key === 'Escape') closeLightbox();
@@ -1147,8 +1201,11 @@
         .querySelectorAll('.template-btn')
         .forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
+      updatePdfPreview();
     });
   });
+  pdfColumns.addEventListener('change', updatePdfPreview);
+  pdfPerPage.addEventListener('change', updatePdfPreview);
   let searchTrackTimer;
   const searchClear = document.getElementById('search-clear');
 
@@ -1179,6 +1236,19 @@
     }, 1000);
   });
   sortSelect.addEventListener('change', applyFiltersAndSort);
+
+  // ── Newsletter ──────────────────────────────────────────────────────
+  const newsletterForm = document.getElementById('newsletter-form');
+  if (newsletterForm) {
+    newsletterForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = newsletterForm.querySelector('.footer-newsletter-input');
+      if (input && input.value.trim()) {
+        showToast('Gracias por suscribirse');
+        input.value = '';
+      }
+    });
+  }
 
   // ── Initial Load ─────────────────────────────────────────────────────
   loadCatalog();

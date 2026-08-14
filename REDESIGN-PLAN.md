@@ -94,7 +94,7 @@
 ~~Define CSS custom properties for all transitions: duration, easing, delay.~~ ✅ Done
 
 ### 10. Component State System
-Define consistent hover, focus, active, disabled, loading states for all interactive elements. ⚠️ Partial — hover/focus done, disabled/loading states TODO
+~~Define consistent hover, focus, active, disabled, loading states for all interactive elements.~~ ✅ Done — hover/focus via CSS, disabled/loading via `.btn.loading` class with spinner.
 
 ---
 
@@ -330,15 +330,15 @@ Define consistent hover, focus, active, disabled, loading states for all interac
 
 ### Upload Modal
 - **Current:** Drop zone with preview.
-- **Fix:** ~~Add focus trap.~~ ✅ Done — trapFocus in openUpload. ~~Add `role="dialog"`.~~ ✅ Done. Improve drop zone visual feedback. ❌ TODO. Add file size validation display. ❌ TODO.
+- **Fix:** ~~Add focus trap.~~ ✅ Done — trapFocus in openUpload. ~~Add `role="dialog"`.~~ ✅ Done. ~~Improve drop zone visual feedback.~~ ✅ Done — solid border + glow on dragover. ~~Add file size validation display.~~ ✅ Done — file size shown below each preview thumbnail.
 
 ### PDF Settings Modal
 - **Current:** Template selector, columns, margins.
-- **Fix:** ~~Add focus trap.~~ ✅ Done — trapFocus in openPdfSettings. ~~Add `role="dialog"`.~~ ✅ Done. ~~Improve radio button styling (custom radios).~~ ✅ Done — custom circle + dot animation. Add preview of layout. ❌ TODO.
+- **Fix:** ~~Add focus trap.~~ ✅ Done — trapFocus in openPdfSettings. ~~Add `role="dialog"`.~~ ✅ Done. ~~Improve radio button styling (custom radios).~~ ✅ Done — custom circle + dot animation. ~~Add preview of layout.~~ ✅ Done — pdf-preview with grid visualization.
 
 ### Toast Notifications
 - **Current:** Slide-in with gold bar.
-- **Fix:** ~~Move above back-to-top button (z-index).~~ ✅ Done. ~~Add auto-dismiss progress bar animation.~~ ✅ Done — toastCountdown animation. Add swipe-to-dismiss on mobile. ❌ TODO.
+- **Fix:** ~~Move above back-to-top button (z-index).~~ ✅ Done. ~~Add auto-dismiss progress bar animation.~~ ✅ Done — toastCountdown animation. ~~Add swipe-to-dismiss on mobile.~~ ✅ Done — touch event handlers with threshold.
 
 ### Search Input
 - **Current:** Basic input with icon.
@@ -354,7 +354,7 @@ Define consistent hover, focus, active, disabled, loading states for all interac
 
 ### Footer
 - **Current:** Structured with gold dividers.
-- **Fix:** ~~Add actual links (not just text).~~ ✅ Done. ~~Add social icons.~~ ✅ Done — WhatsApp, Instagram, phone icons. Add newsletter signup (optional). ❌ TODO.
+- **Fix:** ~~Add actual links (not just text).~~ ✅ Done. ~~Add social icons.~~ ✅ Done — WhatsApp, Instagram, phone icons. ~~Add newsletter signup (optional).~~ ✅ Done — email input + subscribe button.
 
 ---
 
@@ -726,7 +726,7 @@ function trapFocus(modal) {
 | **P0 — Critical** | Google Fonts, type scale, spacing scale, focus-visible, skip link, light theme contrast fix | 2–3 hours | ✅ Done |
 | **P1 — High** | Elevation system, animation tokens, radius system, color completion, focus traps, aria-live, image error states | 2–3 hours | ✅ Done |
 | **P2 — Medium** | ~~Skeleton enhancement~~ ✅, ~~toast progress bar~~ ✅, ~~filter chip improvements~~ ✅, image counter, custom radios | 2–3 hours | ⚠️ Partial |
-| **P3 — Polish** | Search clear button, back-to-top ring, footer social icons, disabled/loading states, swipe-to-dismiss | 1–2 hours | ❌ TODO |
+| **P3 — Polish** | ~~Search clear button~~ ✅, ~~back-to-top ring~~ ✅, ~~footer social icons~~ ✅, ~~disabled/loading states~~ ✅, ~~swipe-to-dismiss~~ ✅ | 1–2 hours | ✅ Done |
 
 ---
 
@@ -768,16 +768,7 @@ function trapFocus(modal) {
 - Image error placeholder (handleImageError + styled .product-image-error)
 
 ### ❌ Remaining Items (Actionable)
-1. **Disabled/loading button states** — Visual feedback for async actions
-2. **Upload drop zone visual feedback** — Improve drag-over styling
-3. **File size validation display** — Show file size in upload preview
-4. **Swipe-to-dismiss on mobile** — Toast notifications
-5. **PDF layout preview** — Visual preview in settings modal
-6. **Footer newsletter signup** — Optional email capture
+_— None. All items from the redesign plan have been implemented._
 
 ### Recommended Next Steps (Priority Order)
-1. **Disabled/loading button states** (low impact, ~30 min) — Visual feedback for async actions
-2. **Upload drop zone visual feedback** (low impact, ~15 min) — Improve drag-over styling
-3. **File size validation display** (low impact, ~15 min) — Show file size in upload preview
-4. **Swipe-to-dismiss on mobile** (low impact, ~30 min) — Toast notifications
-5. **PDF layout preview** (low impact, ~1 hour) — Visual preview in settings modal
+_— All redesign plan items are complete. Consider next steps: performance optimization, analytics, or new features._

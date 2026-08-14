@@ -493,6 +493,40 @@ code {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  pointer-events: none;
+}
+
+.btn.loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--radius-full);
+  animation: btnSpin 0.7s linear infinite;
+}
+
+.btn-gold.loading::after {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+}
+
+.btn-ghost.loading::after {
+  border-color: var(--border-default);
+  border-top-color: var(--accent);
+}
+
+@keyframes btnSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Magnetic Button Effect ──────────────────────────────────────────── */
@@ -1552,6 +1586,60 @@ body.theme-transitioning::before {
   outline-offset: 2px;
 }
 
+.footer-newsletter {
+  margin-bottom: var(--space-5);
+  text-align: center;
+}
+
+.footer-newsletter-text {
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-3);
+}
+
+.footer-newsletter-form {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.footer-newsletter-input {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.5px;
+  outline: none;
+  transition: var(--transition-all);
+}
+
+.footer-newsletter-input::placeholder {
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.6rem;
+}
+
+.footer-newsletter-input:focus {
+  border-color: var(--border-accent-active);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.btn-newsletter {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-2xs);
+  white-space: nowrap;
+}
+
 .footer-nav {
   display: flex;
   justify-content: center;
@@ -2009,8 +2097,15 @@ body.theme-transitioning::before {
 }
 
 .drop-zone.dragover {
-  border-color: var(--border-accent-active);
+  border-color: var(--accent);
+  border-style: solid;
   background: var(--accent-bg);
+  box-shadow: 0 0 0 4px var(--accent-bg);
+}
+
+.drop-zone.dragover svg {
+  color: var(--accent);
+  transform: translateY(-4px);
 }
 
 .drop-zone p {
@@ -2037,7 +2132,7 @@ body.theme-transitioning::before {
   flex-wrap: wrap;
   justify-content: center;
   margin-top: var(--space-4);
-  max-height: 120px;
+  max-height: 140px;
   overflow-y: auto;
 }
 
@@ -2046,17 +2141,30 @@ body.theme-transitioning::before {
 }
 
 .upload-preview-item {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--bg-tertiary);
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .upload-preview-item img {
   width: 100%;
-  height: 100%;
+  height: 48px;
   object-fit: cover;
+}
+
+.upload-preview-item .upload-file-size {
+  font-size: 0.55rem;
+  color: var(--text-tertiary);
+  text-align: center;
+  line-height: 1.2;
+  padding: 1px 2px;
+  background: var(--bg-secondary);
+  letter-spacing: 0.02em;
 }
 
 .upload-actions {
@@ -2117,6 +2225,49 @@ body.theme-transitioning::before {
 
 .setting-row .sort-select {
   width: 100%;
+}
+
+.pdf-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pdf-preview-page {
+  width: 120px;
+  height: 160px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pdf-preview-grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  gap: 4px;
+}
+
+.pdf-preview-grid[data-cols="1"] { grid-template-columns: 1fr; }
+.pdf-preview-grid[data-cols="2"] { grid-template-columns: 1fr 1fr; }
+.pdf-preview-grid[data-cols="3"] { grid-template-columns: 1fr 1fr 1fr; }
+.pdf-preview-grid[data-cols="4"] { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+.pdf-preview-cell {
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  aspect-ratio: 1;
+}
+
+.pdf-preview-info {
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  letter-spacing: 1px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
 }
 
 .template-options {
