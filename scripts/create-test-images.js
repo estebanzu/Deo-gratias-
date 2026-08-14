@@ -3,21 +3,70 @@
  * Run with: node scripts/create-test-images.js
  */
 const sharp = require('sharp');
-const path  = require('path');
-const fs    = require('fs');
+const path = require('path');
+const fs = require('fs');
 
 const dir = path.join(__dirname, '..', 'images');
 if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
 const samples = [
-  { name: 'aurora-pendant.jpg',      w: 800, h: 1000, bg: '#1a1a2e', fg: '#EFC07B', label: 'Aurora Pendant' },
-  { name: 'celeste-ring.png',        w: 900, h: 900,  bg: '#16213E', fg: '#f5d89a', label: 'Celeste Ring' },
-  { name: 'noir-bracelet.jpg',       w: 1200, h: 800, bg: '#0F3460', fg: '#EFC07B', label: 'Noir Bracelet' },
-  { name: 'soleil-earrings.webp',    w: 800, h: 1000, bg: '#1A1A2E', fg: '#d4a853', label: 'Soleil Earrings' },
-  { name: 'lune-necklace.jpg',       w: 1000, h: 1000, bg: '#16213E', fg: '#EFC07B', label: 'Lune Necklace' },
-  { name: 'étoile-brooch.png',       w: 700, h: 900,  bg: '#0F3460', fg: '#f5d89a', label: 'Étoile Brooch' },
-  { name: 'riviere-tennis-bracelet.jpg', w: 1400, h: 900, bg: '#1a1a2e', fg: '#EFC07B', label: 'Rivière Tennis Bracelet' },
-  { name: 'mesmerise-cocktail-ring.png', w: 900, h: 1200, bg: '#16213E', fg: '#d4a853', label: 'Mesmerise Cocktail Ring' },
+  {
+    name: 'aurora-pendant.jpg',
+    w: 800,
+    h: 1000,
+    bg: '#1a1a2e',
+    fg: '#EFC07B',
+    label: 'Aurora Pendant',
+  },
+  { name: 'celeste-ring.png', w: 900, h: 900, bg: '#16213E', fg: '#f5d89a', label: 'Celeste Ring' },
+  {
+    name: 'noir-bracelet.jpg',
+    w: 1200,
+    h: 800,
+    bg: '#0F3460',
+    fg: '#EFC07B',
+    label: 'Noir Bracelet',
+  },
+  {
+    name: 'soleil-earrings.webp',
+    w: 800,
+    h: 1000,
+    bg: '#1A1A2E',
+    fg: '#d4a853',
+    label: 'Soleil Earrings',
+  },
+  {
+    name: 'lune-necklace.jpg',
+    w: 1000,
+    h: 1000,
+    bg: '#16213E',
+    fg: '#EFC07B',
+    label: 'Lune Necklace',
+  },
+  {
+    name: 'étoile-brooch.png',
+    w: 700,
+    h: 900,
+    bg: '#0F3460',
+    fg: '#f5d89a',
+    label: 'Étoile Brooch',
+  },
+  {
+    name: 'riviere-tennis-bracelet.jpg',
+    w: 1400,
+    h: 900,
+    bg: '#1a1a2e',
+    fg: '#EFC07B',
+    label: 'Rivière Tennis Bracelet',
+  },
+  {
+    name: 'mesmerise-cocktail-ring.png',
+    w: 900,
+    h: 1200,
+    bg: '#16213E',
+    fg: '#d4a853',
+    label: 'Mesmerise Cocktail Ring',
+  },
 ];
 
 async function create() {

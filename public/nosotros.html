@@ -1,181 +1,296 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" data-theme="dark">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nosotros — Deo Gratias</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/fonts.css" />
-  <link rel="stylesheet" href="/css/style.css" />
-  <link rel="stylesheet" href="/css/nosotros.css" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nosotros — Deo Gratias</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/nosotros.css" />
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Ir al contenido</a>
+    <div id="scroll-progress" class="scroll-progress"></div>
+    <div class="noise-overlay" aria-hidden="true"></div>
 
-  <a href="#main-content" class="skip-link">Ir al contenido</a>
-  <div id="scroll-progress" class="scroll-progress"></div>
-  <div class="noise-overlay" aria-hidden="true"></div>
-
-  <header class="site-header">
-    <div class="header-inner">
-      <div class="brand-mark">
-        <a href="/" class="brand-name">Deo Gratias</a>
-        <span class="brand-tagline">Joyeria Fina</span>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand-mark">
+          <a href="/" class="brand-name">Deo Gratias</a>
+          <span class="brand-tagline">Joyeria Fina</span>
+        </div>
+        <nav class="header-actions">
+          <a href="/" class="btn btn-ghost">Catalogo</a>
+          <button id="btn-theme" class="theme-toggle" title="Cambiar tema">
+            <svg
+              class="icon-sun"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+            <svg
+              class="icon-moon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+        </nav>
       </div>
-      <nav class="header-actions">
-        <a href="/" class="btn btn-ghost">Catalogo</a>
-        <button id="btn-theme" class="theme-toggle" title="Cambiar tema">
-          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
-      </nav>
-    </div>
-  </header>
+    </header>
 
-  <main id="main-content" class="nosotros-page">
+    <main id="main-content" class="nosotros-page">
+      <!-- ── Hero ────────────────────────────────────────────────────── -->
+      <section class="nosotros-hero">
+        <div class="hero-line"></div>
+        <h1 class="nosotros-title">Nuestra Historia</h1>
+        <p class="nosotros-subtitle">Fe, arte y tradicion en cada pieza</p>
+        <div class="hero-line"></div>
+      </section>
 
-    <!-- ── Hero ────────────────────────────────────────────────────── -->
-    <section class="nosotros-hero">
-      <div class="hero-line"></div>
-      <h1 class="nosotros-title">Nuestra Historia</h1>
-      <p class="nosotros-subtitle">Fe, arte y tradicion en cada pieza</p>
-      <div class="hero-line"></div>
-    </section>
-
-    <!-- ── Story ───────────────────────────────────────────────────── -->
-    <section class="nosotros-section">
-      <div class="nosotros-content">
-        <div class="section-icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <!-- ── Story ───────────────────────────────────────────────────── -->
+      <section class="nosotros-section">
+        <div class="nosotros-content">
+          <div class="section-icon">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <h2 class="section-title">Deo Gratias</h2>
+          <p class="section-text">
+            Significa tomar todo de las manos de la Divina Providencia, sentirse agradecido y, por
+            esta razon, llegar a ser agradecido.
+          </p>
+          <p class="section-text">
+            Nuestra joyeria nace de la gratitud. Cada pieza es un acto de devocion, una celebracion
+            de la belleza que nos rodea y del talento que el Creador puso en nuestras manos.
+          </p>
         </div>
-        <h2 class="section-title">Deo Gratias</h2>
-        <p class="section-text">
-          Significa tomar todo de las manos de la Divina Providencia, sentirse agradecido y, por esta razon, llegar a ser agradecido.
-        </p>
-        <p class="section-text">
-          Nuestra joyeria nace de la gratitud. Cada pieza es un acto de devocion, una celebracion de la belleza que nos rodea y del talento que el Creador puso en nuestras manos.
-        </p>
+      </section>
+
+      <!-- ── Values ──────────────────────────────────────────────────── -->
+      <section class="nosotros-section nosotros-values">
+        <h2 class="section-title">Nuestros Valores</h2>
+        <div class="values-grid">
+          <div class="value-card">
+            <div class="value-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <h3>Fe</h3>
+            <p>
+              Cada creacion es inspirada por la divina providencia y el agradecimiento a Dios por
+              los dones recibidos.
+            </p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                <line x1="9" y1="9" x2="9.01" y2="9" />
+                <line x1="15" y1="9" x2="15.01" y2="9" />
+              </svg>
+            </div>
+            <h3>Artesania</h3>
+            <p>
+              Cada pieza es trabajada a mano con dedicacion y amor, respetando la tradicion joyera
+              de generaciones.
+            </p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                />
+              </svg>
+            </div>
+            <h3>Calidad</h3>
+            <p>
+              Utilizamos exclusivamente materiales de la mas alta calidad: oro, plata, cristales y
+              piedras preciosas premium.
+            </p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                />
+              </svg>
+            </div>
+            <h3>Confianza</h3>
+            <p>
+              Cada pieza incluye nuestra garantia de por vida. Su satisfaccion es nuestra mayor
+              recompensa.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Process ─────────────────────────────────────────────────── -->
+      <section class="nosotros-section">
+        <h2 class="section-title">Nuestro Proceso</h2>
+        <div class="process-steps">
+          <div class="process-step">
+            <div class="step-number">01</div>
+            <div class="step-content">
+              <h3>Inspiracion</h3>
+              <p>
+                Cada coleccion comienza con una vision. Buscamos inspiracion en la naturaleza, la fe
+                y la belleza de Costa Rica.
+              </p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">02</div>
+            <div class="step-content">
+              <h3>Diseno</h3>
+              <p>
+                Nuestros artesanos disean cada pieza con meticulous detail, equilibrando elegancia y
+                wearable everyday.
+              </p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">03</div>
+            <div class="step-content">
+              <h3>Creacion</h3>
+              <p>
+                Manos expertas dan forma a cada joya usando tecnicas tradicionales y materiales de
+                la mas alta calidad.
+              </p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">04</div>
+            <div class="step-content">
+              <h3>Entrega</h3>
+              <p>
+                Cada pieza se entrega con amor, listo para ser un tesoro que trae alegria y
+                significado a quien la lleva.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── CTA ─────────────────────────────────────────────────────── -->
+      <section class="nosotros-section nosotros-cta">
+        <div class="hero-line"></div>
+        <h2 class="section-title">Descubra Nuestra Coleccion</h2>
+        <p class="section-text">Cada pieza espera ser descubierta por usted.</p>
+        <a href="/" class="btn btn-gold btn-lg">Ver Catalogo</a>
+        <div class="hero-line"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">Deo Gratias</div>
+        <div class="footer-divider-row">
+          <div class="footer-gold-line"></div>
+          <div class="footer-diamond">&#9670;</div>
+          <div class="footer-gold-line"></div>
+        </div>
+        <nav class="footer-nav">
+          <a href="/">Catalogo</a>
+          <span class="footer-dot">&middot;</span>
+          <span>Nosotros</span>
+          <span class="footer-dot">&middot;</span>
+          <a href="https://wa.me/50688830657" target="_blank" rel="noopener">Contacto</a>
+        </nav>
+        <p class="footer-copy">&copy; 2026 Deo Gratias. Todos los derechos reservados.</p>
       </div>
-    </section>
+    </footer>
 
-    <!-- ── Values ──────────────────────────────────────────────────── -->
-    <section class="nosotros-section nosotros-values">
-      <h2 class="section-title">Nuestros Valores</h2>
-      <div class="values-grid">
-        <div class="value-card">
-          <div class="value-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <h3>Fe</h3>
-          <p>Cada creacion es inspirada por la divina providencia y el agradecimiento a Dios por los dones recibidos.</p>
-        </div>
-        <div class="value-card">
-          <div class="value-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-          </div>
-          <h3>Artesania</h3>
-          <p>Cada pieza es trabajada a mano con dedicacion y amor, respetando la tradicion joyera de generaciones.</p>
-        </div>
-        <div class="value-card">
-          <div class="value-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          </div>
-          <h3>Calidad</h3>
-          <p>Utilizamos exclusivamente materiales de la mas alta calidad: oro, plata, cristales y piedras preciosas premium.</p>
-        </div>
-        <div class="value-card">
-          <div class="value-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </div>
-          <h3>Confianza</h3>
-          <p>Cada pieza incluye nuestra garantia de por vida. Su satisfaccion es nuestra mayor recompensa.</p>
-        </div>
-      </div>
-    </section>
+    <script>
+      // Theme toggle
+      const btnTheme = document.getElementById('btn-theme');
+      const saved = localStorage.getItem('dg-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      btnTheme.addEventListener('click', () => {
+        const c = document.documentElement.getAttribute('data-theme');
+        const n = c === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', n);
+        localStorage.setItem('dg-theme', n);
+      });
 
-    <!-- ── Process ─────────────────────────────────────────────────── -->
-    <section class="nosotros-section">
-      <h2 class="section-title">Nuestro Proceso</h2>
-      <div class="process-steps">
-        <div class="process-step">
-          <div class="step-number">01</div>
-          <div class="step-content">
-            <h3>Inspiracion</h3>
-            <p>Cada coleccion comienza con una vision. Buscamos inspiracion en la naturaleza, la fe y la belleza de Costa Rica.</p>
-          </div>
-        </div>
-        <div class="process-step">
-          <div class="step-number">02</div>
-          <div class="step-content">
-            <h3>Diseno</h3>
-            <p>Nuestros artesanos disean cada pieza con meticulous detail, equilibrando elegancia y wearable everyday.</p>
-          </div>
-        </div>
-        <div class="process-step">
-          <div class="step-number">03</div>
-          <div class="step-content">
-            <h3>Creacion</h3>
-            <p>Manos expertas dan forma a cada joya usando tecnicas tradicionales y materiales de la mas alta calidad.</p>
-          </div>
-        </div>
-        <div class="process-step">
-          <div class="step-number">04</div>
-          <div class="step-content">
-            <h3>Entrega</h3>
-            <p>Cada pieza se entrega con amor, listo para ser un tesoro que trae alegria y significado a quien la lleva.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── CTA ─────────────────────────────────────────────────────── -->
-    <section class="nosotros-section nosotros-cta">
-      <div class="hero-line"></div>
-      <h2 class="section-title">Descubra Nuestra Coleccion</h2>
-      <p class="section-text">Cada pieza espera ser descubierta por usted.</p>
-      <a href="/" class="btn btn-gold btn-lg">Ver Catalogo</a>
-      <div class="hero-line"></div>
-    </section>
-
-  </main>
-
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <div class="footer-brand">Deo Gratias</div>
-      <div class="footer-divider-row">
-        <div class="footer-gold-line"></div>
-        <div class="footer-diamond">&#9670;</div>
-        <div class="footer-gold-line"></div>
-      </div>
-      <nav class="footer-nav">
-        <a href="/">Catalogo</a>
-        <span class="footer-dot">&middot;</span>
-        <span>Nosotros</span>
-        <span class="footer-dot">&middot;</span>
-        <a href="https://wa.me/50688830657" target="_blank" rel="noopener">Contacto</a>
-      </nav>
-      <p class="footer-copy">&copy; 2026 Deo Gratias. Todos los derechos reservados.</p>
-    </div>
-  </footer>
-
-  <script>
-    // Theme toggle
-    const btnTheme = document.getElementById('btn-theme');
-    const saved = localStorage.getItem('dg-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', saved);
-    btnTheme.addEventListener('click', () => {
-      const c = document.documentElement.getAttribute('data-theme');
-      const n = c === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', n);
-      localStorage.setItem('dg-theme', n);
-    });
-
-    // Scroll progress
-    window.addEventListener('scroll', () => {
-      const h = document.documentElement.scrollHeight - window.innerHeight;
-      document.getElementById('scroll-progress').style.width = h > 0 ? (window.scrollY / h) * 100 + '%' : '0%';
-    }, { passive: true });
-  </script>
-</body>
+      // Scroll progress
+      window.addEventListener(
+        'scroll',
+        () => {
+          const h = document.documentElement.scrollHeight - window.innerHeight;
+          document.getElementById('scroll-progress').style.width =
+            h > 0 ? (window.scrollY / h) * 100 + '%' : '0%';
+        },
+        { passive: true }
+      );
+    </script>
+  </body>
 </html>

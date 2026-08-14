@@ -2,7 +2,7 @@ services:
   catalog:
     build: .
     ports:
-      - "3015:3015"
+      - '3015:3015'
     volumes:
       - ./images:/app/images
       - ./output:/app/output

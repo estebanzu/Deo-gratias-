@@ -417,7 +417,7 @@ test.describe('Deo Gratias Catalog', () => {
 
     // Click the filter chip for "Test Group"
     const chip = page.locator('.filter-chip', { hasText: 'Test Group' });
-    if (await chip.count() > 0) {
+    if ((await chip.count()) > 0) {
       await chip.click();
       await page.waitForTimeout(300);
       const sections = page.locator('.collection-section');
@@ -590,9 +590,7 @@ test.describe('Deo Gratias Catalog', () => {
   test('API create and delete collection', async ({ page }) => {
     const auth = await getAdminAuth(page);
     // Defensive cleanup so a previous failed run can't leave a stale slug.
-    await page.request
-      .delete('/api/collections/test-col', { headers: auth })
-      .catch(() => {});
+    await page.request.delete('/api/collections/test-col', { headers: auth }).catch(() => {});
     await page.request.post('/api/collections', {
       headers: auth,
       data: { slug: 'test-col', name: 'Test Collection', description: 'A test' },
@@ -612,7 +610,10 @@ test.describe('Deo Gratias Catalog', () => {
     for (const slug of ['parent-col', 'child-col']) {
       await page.request.delete(`/api/collections/${slug}`, { headers: auth }).catch(() => {});
     }
-    await page.request.post('/api/collections', { headers: auth, data: { slug: 'parent-col', name: 'Parent' } });
+    await page.request.post('/api/collections', {
+      headers: auth,
+      data: { slug: 'parent-col', name: 'Parent' },
+    });
     await page.request.post('/api/collections', {
       headers: auth,
       data: { slug: 'child-col', name: 'Child', parent: 'parent-col' },

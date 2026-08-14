@@ -24,14 +24,14 @@
     "express-rate-limit": "^7.2.0",
     "jsonwebtoken": "^9.0.0",
     "multer": "^2.2.0",
-    "puppeteer-core": "^23.11.1"
+    "puppeteer-core": "^23.11.1",
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
     "eslint": "^8.57.0",
     "nodemon": "^3.1.14",
-    "prettier": "^3.3.3",
-    "sharp": "^0.35.3"
+    "prettier": "^3.3.3"
   },
   "prettier": {
     "singleQuote": true,

@@ -13,6 +13,7 @@ Images are hosted on **Cloudinary**. URLs in API responses point to Cloudinary C
 List all images with metadata. Cached for 30 seconds.
 
 **Response**
+
 ```json
 {
   "images": [
@@ -40,18 +41,20 @@ List all images with metadata. Cached for 30 seconds.
 Upload a new image. Supports `multipart/form-data`.
 
 **Form Fields**
-| Field    | Type   | Required | Description                      |
-|----------|--------|----------|----------------------------------|
-| `image`  | file   | Yes      | Image file (jpg, jpeg, png, webp)|
-| `name`   | string | No       | Product name                     |
-| `category`| string| No       | Product category                 |
-| `collection`| string| No    | Collection name                  |
+
+| Field        | Type   | Required | Description                       |
+| ------------ | ------ | -------- | --------------------------------- |
+| `image`      | file   | Yes      | Image file (jpg, jpeg, png, webp) |
+| `name`       | string | No       | Product name                      |
+| `category`   | string | No       | Product category                  |
+| `collection` | string | No       | Collection name                   |
 
 **Max file size:** 10 MB
 
 Images are uploaded to Cloudinary via the server. The response includes Cloudinary URLs.
 
 **Response**
+
 ```json
 {
   "success": true,
@@ -70,6 +73,7 @@ Images are uploaded to Cloudinary via the server. The response includes Cloudina
 Delete an image from Cloudinary.
 
 **Response**
+
 ```json
 { "success": true }
 ```
@@ -83,6 +87,7 @@ Delete an image from Cloudinary.
 Get metadata for a single product.
 
 **Response**
+
 ```json
 {
   "name": "Aurora Pendant",
@@ -101,6 +106,7 @@ Get metadata for a single product.
 Update product metadata. Only provided fields are updated.
 
 **Request Body**
+
 ```json
 {
   "name": "Aurora Pendant II",
@@ -112,6 +118,7 @@ Update product metadata. Only provided fields are updated.
 **Allowed fields:** `name`, `description`, `price`, `category`, `collection`, `material`, `gemstone`, `order`
 
 **Response**
+
 ```json
 {
   "name": "Aurora Pendant II",
@@ -130,6 +137,7 @@ Update product metadata. Only provided fields are updated.
 Remove metadata for a product (image is NOT deleted from Cloudinary).
 
 **Response**
+
 ```json
 { "success": true }
 ```
@@ -143,6 +151,7 @@ Remove metadata for a product (image is NOT deleted from Cloudinary).
 Batch update product sort order.
 
 **Request Body**
+
 ```json
 {
   "orders": [
@@ -153,6 +162,7 @@ Batch update product sort order.
 ```
 
 **Response**
+
 ```json
 { "success": true }
 ```
@@ -166,6 +176,7 @@ Batch update product sort order.
 Generate a PDF catalog. Images are fetched from Cloudinary. Returns a download URL.
 
 **Request Body** (all fields optional)
+
 ```json
 {
   "template": "catalog",
@@ -177,16 +188,17 @@ Generate a PDF catalog. Images are fetched from Cloudinary. Returns a download U
 }
 ```
 
-| Field         | Type     | Default | Options                          |
-|---------------|----------|---------|----------------------------------|
-| `template`    | string   | `catalog` | `catalog`, `line-sheet`, `lookbook` |
-| `columns`     | number   | `2`     | 1–4                              |
-| `perPage`     | number   | `4`     | 2, 4, 6, 8, 12                  |
-| `format`      | string   | `A4`    | `A4`, `Letter`, `Legal`          |
-| `margins`     | object   | `{top:20, right:18, bottom:25, left:18}` | mm values (5–50) |
-| `filenames`   | string[] | all     | Array of filenames to include    |
+| Field       | Type     | Default                                  | Options                             |
+| ----------- | -------- | ---------------------------------------- | ----------------------------------- |
+| `template`  | string   | `catalog`                                | `catalog`, `line-sheet`, `lookbook` |
+| `columns`   | number   | `2`                                      | 1–4                                 |
+| `perPage`   | number   | `4`                                      | 2, 4, 6, 8, 12                      |
+| `format`    | string   | `A4`                                     | `A4`, `Letter`, `Legal`             |
+| `margins`   | object   | `{top:20, right:18, bottom:25, left:18}` | mm values (5–50)                    |
+| `filenames` | string[] | all                                      | Array of filenames to include       |
 
 **Response**
+
 ```json
 {
   "success": true,
@@ -197,6 +209,7 @@ Generate a PDF catalog. Images are fetched from Cloudinary. Returns a download U
 ```
 
 **Output files:**
+
 - `catalog` template → `deo-gratias-catalog.pdf`
 - `line-sheet` → `deo-gratias-catalog-line-sheet.pdf`
 - `lookbook` → `deo-gratias-catalog-lookbook.pdf`
@@ -205,10 +218,10 @@ Generate a PDF catalog. Images are fetched from Cloudinary. Returns a download U
 
 ## Static File Serving
 
-| Path        | Directory       | Cache   |
-|-------------|-----------------|---------|
-| `/`         | `public/`       | 1 hour  |
-| `/output/`  | `output/`       | 1 hour  |
+| Path       | Directory | Cache  |
+| ---------- | --------- | ------ |
+| `/`        | `public/` | 1 hour |
+| `/output/` | `output/` | 1 hour |
 
 Images are served from Cloudinary CDN, not the local server.
 
@@ -217,12 +230,13 @@ Images are served from Cloudinary CDN, not the local server.
 ## Error Responses
 
 All error responses follow:
+
 ```json
 { "error": "Error message" }
 ```
 
 | Status | Meaning                        |
-|--------|--------------------------------|
+| ------ | ------------------------------ |
 | 400    | Bad request / validation error |
 | 404    | Product or image not found     |
 | 500    | Server error                   |

@@ -14,6 +14,7 @@ const presets = require('./lib/presets');
 const favorites = require('./lib/favorites');
 const analytics = require('./lib/analytics');
 const webhooks = require('./lib/webhooks');
+const { findDuplicates } = require('./lib/image-similarity');
 
 const app = express();
 const PORT = config.port;
@@ -151,9 +152,18 @@ async function getCachedImages() {
 }
 
 // ── Static files with caching headers ───────────────────────────────────────
-app.use('/css', express.static(path.join(__dirname, 'public/css'), { maxAge: '1y', immutable: true }));
-app.use('/js', express.static(path.join(__dirname, 'public/js'), { maxAge: '1y', immutable: true }));
-app.use('/fonts', express.static(path.join(__dirname, 'public/fonts'), { maxAge: '1y', immutable: true }));
+app.use(
+  '/css',
+  express.static(path.join(__dirname, 'public/css'), { maxAge: '1y', immutable: true })
+);
+app.use(
+  '/js',
+  express.static(path.join(__dirname, 'public/js'), { maxAge: '1y', immutable: true })
+);
+app.use(
+  '/fonts',
+  express.static(path.join(__dirname, 'public/fonts'), { maxAge: '1y', immutable: true })
+);
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h' }));
 app.use('/output', express.static(outputDir(), { maxAge: '1h' }));
 
@@ -240,32 +250,37 @@ app.get('/api/products/:filename', (req, res) => {
 });
 
 // ── API: Update product metadata ─────────────────────────────────────────────
-app.put('/api/products/:filename', verifyToken, requireRole('admin', 'editor'), async (req, res) => {
-  const { filename } = req.params;
-  const exists = await cloudinaryApi.imageExists(filename);
-  if (!exists) {
-    return res.status(404).json({ error: 'Image not found' });
-  }
+app.put(
+  '/api/products/:filename',
+  verifyToken,
+  requireRole('admin', 'editor'),
+  async (req, res) => {
+    const { filename } = req.params;
+    const exists = await cloudinaryApi.imageExists(filename);
+    if (!exists) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
 
-  const allowed = [
-    'name',
-    'description',
-    'price',
-    'category',
-    'collection',
-    'material',
-    'gemstone',
-    'order',
-  ];
-  const updates = {};
-  for (const key of allowed) {
-    if (req.body[key] !== undefined) updates[key] = req.body[key];
-  }
+    const allowed = [
+      'name',
+      'description',
+      'price',
+      'category',
+      'collection',
+      'material',
+      'gemstone',
+      'order',
+    ];
+    const updates = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
 
-  const saved = metadata.upsert(filename, updates);
-  invalidateCache();
-  res.json(saved);
-});
+    const saved = metadata.upsert(filename, updates);
+    invalidateCache();
+    res.json(saved);
+  }
+);
 
 // ── Bulk edit ────────────────────────────────────────────────────────
 app.post('/api/bulk-edit', verifyToken, requireRole('admin', 'editor'), async (req, res) => {
@@ -557,6 +572,31 @@ app.get('/api/export/csv', (_req, res) => {
   res.send(rows.join('\n'));
 });
 
+// ── API: Image Similarity Detection ────────────────────────────────────────
+app.get('/api/duplicates', verifyToken, requireRole('admin'), async (req, res) => {
+  try {
+    const { findDuplicates } = require('./lib/image-similarity');
+    const allMeta = metadata.readAll();
+    const images = Object.entries(allMeta).map(([filename, meta]) => {
+      const filePath = path.join(config.imagesDir, filename);
+      return {
+        id: filename,
+        filename,
+        name: meta.name || filename,
+        url: `/images/${filename}`,
+        thumbUrl: getThumbUrl(filename),
+        filePath,
+      };
+    });
+
+    const duplicates = await findDuplicates(images);
+    res.json({ duplicates, total: duplicates.length });
+  } catch (err) {
+    console.error('Duplicate detection error:', err);
+    res.status(500).json({ error: 'Error detectando duplicados' });
+  }
+});
+
 // ── API: Webhooks ──────────────────────────────────────────────────────────
 app.get('/api/webhooks', (_req, res) => {
   res.json({ webhooks: webhooks.list() });
@@ -627,7 +667,11 @@ app.post('/api/register', authLimiter, async (req, res) => {
   if (existing) return res.status(409).json({ error: 'User already exists' });
   const hashed = await bcrypt.hash(password, 10);
   const newUser = await users.create({ email, password: hashed, role: role || 'viewer' });
-  const token = jwt.sign({ id: newUser.id, email: newUser.email, role: newUser.role }, config.jwtSecret, { expiresIn: '1h' });
+  const token = jwt.sign(
+    { id: newUser.id, email: newUser.email, role: newUser.role },
+    config.jwtSecret,
+    { expiresIn: '1h' }
+  );
   res
     .cookie('jwt', token, { httpOnly: true, sameSite: 'strict' })
     .json({ success: true, user: { email: newUser.email, role: newUser.role } });
@@ -657,8 +701,7 @@ app.post('/api/login', authLimiter, async (req, res) => {
 
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const match =
-    user.password && (await bcrypt.compare(password, user.password).catch(() => false));
+  const match = user.password && (await bcrypt.compare(password, user.password).catch(() => false));
   // Bootstrap admin has no bcrypt hash, so accept a direct password match.
   const bootstrapOk = !user.password && password === (config.admin.pass || 'admin');
   if (!match && !bootstrapOk) return res.status(401).json({ error: 'Invalid credentials' });
@@ -694,5 +737,3 @@ module.exports = app;
 if (require.main === module) {
   app.listen(PORT, () => console.log(`  Deo Gratias Catalog started  -> http://localhost:${PORT}`));
 }
-
-

@@ -2,7 +2,14 @@
   "root": true,
   "env": { "node": true, "es2022": true, "browser": true },
   "parserOptions": { "ecmaVersion": 2022, "sourceType": "script" },
-  "ignorePatterns": ["node_modules/", "tmp_home/", "dist/", "coverage/", "output/", "test-results/"],
+  "ignorePatterns": [
+    "node_modules/",
+    "tmp_home/",
+    "dist/",
+    "coverage/",
+    "output/",
+    "test-results/"
+  ],
   "rules": {
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "no-console": "off",

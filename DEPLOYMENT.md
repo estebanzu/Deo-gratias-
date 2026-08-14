@@ -12,16 +12,17 @@ npm start
 
 ## Environment Variables
 
-| Variable                | Default         | Description                          |
-|-------------------------|-----------------|--------------------------------------|
-| `PORT`                  | `3015`          | Server port                          |
-| `IMAGES_DIR`            | `images`        | Legacy image directory (unused)      |
-| `CLOUDINARY_CLOUD_NAME` | —               | Cloudinary cloud name (required)     |
-| `CLOUDINARY_API_KEY`    | —               | Cloudinary API key (required)        |
-| `CLOUDINARY_API_SECRET` | —               | Cloudinary API secret (required)     |
-| `CLOUDINARY_FOLDER`     | (empty)         | Cloudinary folder prefix (optional)  |
+| Variable                | Default  | Description                         |
+| ----------------------- | -------- | ----------------------------------- |
+| `PORT`                  | `3015`   | Server port                         |
+| `IMAGES_DIR`            | `images` | Legacy image directory (unused)     |
+| `CLOUDINARY_CLOUD_NAME` | —        | Cloudinary cloud name (required)    |
+| `CLOUDINARY_API_KEY`    | —        | Cloudinary API key (required)       |
+| `CLOUDINARY_API_SECRET` | —        | Cloudinary API secret (required)    |
+| `CLOUDINARY_FOLDER`     | (empty)  | Cloudinary folder prefix (optional) |
 
 Create `.env` from the example:
+
 ```bash
 cp .env.example .env
 ```
@@ -98,9 +99,9 @@ server {
 
 Only one directory must persist across deploys:
 
-| Directory   | Contents                |
-|-------------|-------------------------|
-| `data/`     | `products.json` metadata|
+| Directory | Contents                 |
+| --------- | ------------------------ |
+| `data/`   | `products.json` metadata |
 
 Images are hosted on Cloudinary — no local storage needed.
 

@@ -98,23 +98,23 @@
 
 ## Test Coverage
 
-| Phase | Tests |
-|-------|-------|
-| Phase 1 | Page structure, image catalog, search/filter, lightbox, upload, PDF, themes |
-| Phase 2 | Reordering, collections, thumbnails, caching, keyboard navigation |
-| Phase 3 | PDF modal (10 tests), selection mode (4 tests), export options (3 tests) |
-| P0 | Accessibility (skip-link, focus-visible, ARIA), theme toggle/persistence, collection filters |
+| Phase     | Tests                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------ |
+| Phase 1   | Page structure, image catalog, search/filter, lightbox, upload, PDF, themes                            |
+| Phase 2   | Reordering, collections, thumbnails, caching, keyboard navigation                                      |
+| Phase 3   | PDF modal (10 tests), selection mode (4 tests), export options (3 tests)                               |
+| P0        | Accessibility (skip-link, focus-visible, ARIA), theme toggle/persistence, collection filters           |
 | Phase 4–9 | Visual polish, animations, loading, layout, micro-interactions, footer, accessibility (48 total tests) |
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Backend | Node.js + Express |
-| Frontend | Vanilla JS + CSS Custom Properties |
-| PDF | Puppeteer |
-| Images | Cloudinary (hosting + transformations) |
-| Upload | Multer |
-| Config | dotenv |
-| Tests | Playwright |
-| Linting | ESLint + Prettier |
+| Layer    | Technology                             |
+| -------- | -------------------------------------- |
+| Backend  | Node.js + Express                      |
+| Frontend | Vanilla JS + CSS Custom Properties     |
+| PDF      | Puppeteer                              |
+| Images   | Cloudinary (hosting + transformations) |
+| Upload   | Multer                                 |
+| Config   | dotenv                                 |
+| Tests    | Playwright                             |
+| Linting  | ESLint + Prettier                      |

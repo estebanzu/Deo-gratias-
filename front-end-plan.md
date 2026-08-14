@@ -155,25 +155,25 @@ lacks the atmospheric depth of a high-end atelier.
 
 ## Implementation Priority
 
-| Phase | Items | Effort |
-|-------|-------|--------|
-| **P0 — Core Feel** | 1, 2, 3, 5, 6, 13 | High impact, moderate effort |
-| **P1 — Interactions** | 7, 8, 9, 10, 11, 12 | Medium impact, moderate effort |
-| **P2 — Layout** | 15, 16, 17, 18 | Medium impact, lower effort |
-| **P3 — Polish** | 4, 14, 19, 20, 21, 22 | Lower impact, varied effort |
-| **P4 — Final** | 23, 24, 25, 26 | Lower impact, low effort |
+| Phase                 | Items                 | Effort                         |
+| --------------------- | --------------------- | ------------------------------ |
+| **P0 — Core Feel**    | 1, 2, 3, 5, 6, 13     | High impact, moderate effort   |
+| **P1 — Interactions** | 7, 8, 9, 10, 11, 12   | Medium impact, moderate effort |
+| **P2 — Layout**       | 15, 16, 17, 18        | Medium impact, lower effort    |
+| **P3 — Polish**       | 4, 14, 19, 20, 21, 22 | Lower impact, varied effort    |
+| **P4 — Final**        | 23, 24, 25, 26        | Lower impact, low effort       |
 
 ---
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `public/css/style.css` | Palette, textures, animations, skeleton, glassmorphism, cursor, scroll progress |
-| `public/css/fonts.css` | No changes needed |
-| `public/js/app.js` | IntersectionObserver, lightbox transitions, animated counter, magnetic buttons, tilt, skeleton, blur-up, back-to-top, scroll progress, custom cursor |
-| `public/index.html` | Skeleton markup, back-to-top button, scroll progress bar, footer restructure, letter spans for hero |
-| `config.js` | Updated color values |
+| File                   | Changes                                                                                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `public/css/style.css` | Palette, textures, animations, skeleton, glassmorphism, cursor, scroll progress                                                                      |
+| `public/css/fonts.css` | No changes needed                                                                                                                                    |
+| `public/js/app.js`     | IntersectionObserver, lightbox transitions, animated counter, magnetic buttons, tilt, skeleton, blur-up, back-to-top, scroll progress, custom cursor |
+| `public/index.html`    | Skeleton markup, back-to-top button, scroll progress bar, footer restructure, letter spans for hero                                                  |
+| `config.js`            | Updated color values                                                                                                                                 |
 
 ---
 

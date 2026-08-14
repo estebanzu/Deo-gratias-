@@ -209,17 +209,25 @@
   // Toast swipe-to-dismiss on mobile
   let toastTouchStartX = 0;
   let toastTouchCurrentX = 0;
-  toast.addEventListener('touchstart', (e) => {
-    toastTouchStartX = e.touches[0].clientX;
-  }, { passive: true });
-  toast.addEventListener('touchmove', (e) => {
-    toastTouchCurrentX = e.touches[0].clientX;
-    const diff = toastTouchCurrentX - toastTouchStartX;
-    if (diff > 0) {
-      toast.style.transform = `translateX(${diff}px)`;
-      toast.style.opacity = Math.max(0, 1 - diff / 150);
-    }
-  }, { passive: true });
+  toast.addEventListener(
+    'touchstart',
+    (e) => {
+      toastTouchStartX = e.touches[0].clientX;
+    },
+    { passive: true }
+  );
+  toast.addEventListener(
+    'touchmove',
+    (e) => {
+      toastTouchCurrentX = e.touches[0].clientX;
+      const diff = toastTouchCurrentX - toastTouchStartX;
+      if (diff > 0) {
+        toast.style.transform = `translateX(${diff}px)`;
+        toast.style.opacity = Math.max(0, 1 - diff / 150);
+      }
+    },
+    { passive: true }
+  );
   toast.addEventListener('touchend', () => {
     const diff = toastTouchCurrentX - toastTouchStartX;
     if (diff > 80) {
@@ -409,6 +417,7 @@
       buildFilters();
       currentPage = 1;
       applyFiltersAndSort();
+      renderHeroCarousel();
     } catch {
       hideSkeleton();
       emptyState.hidden = false;
@@ -453,12 +462,10 @@
           chip.classList.remove('active');
           chip.setAttribute('aria-pressed', 'false');
         } else {
-          filterRow
-            .querySelectorAll(`.filter-chip[data-key="${key}"]`)
-            .forEach((c) => {
-              c.classList.remove('active');
-              c.setAttribute('aria-pressed', 'false');
-            });
+          filterRow.querySelectorAll(`.filter-chip[data-key="${key}"]`).forEach((c) => {
+            c.classList.remove('active');
+            c.setAttribute('aria-pressed', 'false');
+          });
           activeFilters[key] = value;
           chip.classList.add('active');
           chip.setAttribute('aria-pressed', 'true');
@@ -600,6 +607,7 @@
 
   // ── Render Grid ──────────────────────────────────────────────────────
   function renderGrid() {
+    renderMasonryGrid();
     if (viewMode === 'collection' && activeFilters.collection) {
       renderCollectionView();
     } else {
@@ -645,11 +653,169 @@
     observeCards();
   }
 
+  // ── Zone 1: Hero Carousel ────────────────────────────────────────────
+  const heroCarousel = document.getElementById('hero-carousel');
+  const heroTrack = document.getElementById('hero-carousel-track');
+  const heroDots = document.getElementById('hero-carousel-dots');
+  const heroPrev = document.getElementById('hero-carousel-prev');
+  const heroNext = document.getElementById('hero-carousel-next');
+  let heroSlides = [];
+  let heroIndex = 0;
+  let heroTimer = null;
+  const HERO_INTERVAL = 5000;
+
+  function getFeaturedPieces() {
+    if (images.length === 0) return [];
+    const withPrice = images.filter((i) => i.price);
+    if (withPrice.length >= 3) {
+      return withPrice
+        .sort((a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0))
+        .slice(0, 5);
+    }
+    return images.slice(0, Math.min(5, images.length));
+  }
+
+  function renderHeroCarousel() {
+    const featured = getFeaturedPieces();
+    if (featured.length === 0) {
+      heroCarousel.hidden = true;
+      return;
+    }
+
+    heroCarousel.hidden = false;
+    heroIndex = 0;
+
+    heroTrack.innerHTML = featured
+      .map(
+        (img, i) => `
+        <div class="hero-carousel-slide${i === 0 ? ' active' : ''}" data-index="${i}">
+          <img src="${img.thumbUrl || img.url}" alt="${img.name}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async" />
+          <div class="hero-carousel-overlay">
+            <div class="hero-carousel-info">
+              <h2>${img.name}</h2>
+              <p>${img.collection || ''}</p>
+              ${img.price ? `<span class="hero-price">${formatPrice(img.price)}</span>` : ''}
+            </div>
+          </div>
+        </div>`
+      )
+      .join('');
+
+    heroDots.innerHTML = featured
+      .map(
+        (_, i) =>
+          `<button class="hero-carousel-dot${i === 0 ? ' active' : ''}" data-index="${i}" aria-label="Ir a slide ${i + 1}"></button>`
+      )
+      .join('');
+
+    heroSlides = heroTrack.querySelectorAll('.hero-carousel-slide');
+
+    heroDots.querySelectorAll('.hero-carousel-dot').forEach((dot) => {
+      dot.addEventListener('click', () => {
+        goToHeroSlide(parseInt(dot.dataset.index, 10));
+      });
+    });
+
+    heroPrev.addEventListener('click', () => goToHeroSlide(heroIndex - 1));
+    heroNext.addEventListener('click', () => goToHeroSlide(heroIndex + 1));
+
+    // Swipe support
+    let touchStartX = 0;
+    heroCarousel.addEventListener(
+      'touchstart',
+      (e) => {
+        touchStartX = e.touches[0].clientX;
+      },
+      { passive: true }
+    );
+    heroCarousel.addEventListener(
+      'touchend',
+      (e) => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+          goToHeroSlide(heroIndex + (diff > 0 ? 1 : -1));
+        }
+      },
+      { passive: true }
+    );
+
+    startHeroAutoplay();
+  }
+
+  function goToHeroSlide(index) {
+    const total = heroSlides.length;
+    heroIndex = ((index % total) + total) % total;
+
+    heroTrack.style.transform = `translateX(-${heroIndex * 100}%)`;
+
+    heroSlides.forEach((s, i) => s.classList.toggle('active', i === heroIndex));
+    heroDots
+      .querySelectorAll('.hero-carousel-dot')
+      .forEach((d, i) => d.classList.toggle('active', i === heroIndex));
+
+    resetHeroAutoplay();
+  }
+
+  function startHeroAutoplay() {
+    stopHeroAutoplay();
+    heroTimer = setInterval(() => goToHeroSlide(heroIndex + 1), HERO_INTERVAL);
+  }
+
+  function stopHeroAutoplay() {
+    if (heroTimer) clearInterval(heroTimer);
+    heroTimer = null;
+  }
+
+  function resetHeroAutoplay() {
+    stopHeroAutoplay();
+    startHeroAutoplay();
+  }
+
+  heroCarousel.addEventListener('mouseenter', stopHeroAutoplay);
+  heroCarousel.addEventListener('mouseleave', startHeroAutoplay);
+
+  // ── Zone 2: Masonry Grid ─────────────────────────────────────────────
+  const mosaicGrid = document.getElementById('mosaic-grid');
+
+  function renderMasonryGrid() {
+    const pageImages = filteredImages.slice(0, 20);
+    if (pageImages.length === 0) {
+      mosaicGrid.hidden = true;
+      return;
+    }
+
+    mosaicGrid.hidden = false;
+    mosaicGrid.innerHTML = pageImages
+      .map(
+        (img, idx) => `
+        <div class="mosaic-item" data-index="${idx}" onclick="openLightbox(${idx})">
+          <img src="${img.thumbUrl || img.url}" alt="${img.name}" loading="lazy" decoding="async" />
+          <div class="mosaic-item-overlay">
+            <h3>${img.name}</h3>
+            <p>${img.collection || ''}</p>
+            ${img.price ? `<span class="mosaic-price">${formatPrice(img.price)}</span>` : ''}
+          </div>
+        </div>`
+      )
+      .join('');
+  }
+
+  // ── Format Price ─────────────────────────────────────────────────────
+  function formatPrice(price) {
+    if (!price) return '';
+    const num = parseFloat(price);
+    if (isNaN(num)) return price;
+    return num.toLocaleString('es-CR', {
+      style: 'currency',
+      currency: 'CRC',
+      minimumFractionDigits: 0,
+    });
+  }
+
   const WHATSAPP_PHONE = '50688830657';
 
-  function whatsappUrl(productName, productId) {
-    const productLink = `${window.location.origin}/producto/${encodeURIComponent(productId)}`;
-    const msg = encodeURIComponent(`Hola, vi esta pieza en el sitio web y me interesa comprarla: ${productName}\n${productLink}`);
+  function whatsappUrl(productName) {
+    const msg = encodeURIComponent(`Me interesa la pieza ${productName}, quiero saber el precio`);
     return `https://wa.me/${WHATSAPP_PHONE}?text=${msg}`;
   }
 
@@ -666,7 +832,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </button>
           ${imageCount > 1 ? `<span class="product-image-count">${imageCount} fotos</span>` : ''}
-          <a class="product-whatsapp" href="${whatsappUrl(img.name, img.id)}" target="_blank" rel="noopener" title="Consultar por WhatsApp">
+          <a class="product-whatsapp" href="${whatsappUrl(img.name)}" target="_blank" rel="noopener" title="Consultar por WhatsApp">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           </a>
           <div class="product-image-wrap">
@@ -865,8 +1031,19 @@
     }
   }
 
+  // ── Enhanced Lightbox ────────────────────────────────────────────────
+  let lightboxZoom = 1;
+  let lightboxPanX = 0;
+  let lightboxPanY = 0;
+  let lightboxInfoPanelOpen = false;
+  const MAX_ZOOM = 3;
+
   function openLightbox(index) {
     lightboxIndex = index;
+    lightboxZoom = 1;
+    lightboxPanX = 0;
+    lightboxPanY = 0;
+    lightboxInfoPanelOpen = false;
     const img = filteredImages[index];
     if (!img) return;
 
@@ -875,13 +1052,26 @@
     lightboxImg.alt = img.name;
     lightboxName.textContent = img.name;
     lightboxDesc.textContent = img.description || '';
-    lightboxWhatsapp.href = whatsappUrl(img.name, img.id);
+    lightboxWhatsapp.href = whatsappUrl(img.name);
+
+    // Update info panel
+    updateLightboxInfoPanel(img);
+
+    // Update progress bar
+    updateLightboxProgress();
 
     lightboxPrev.style.display = filteredImages.length > 1 ? '' : 'none';
     lightboxNext.style.display = filteredImages.length > 1 ? '' : 'none';
     updateLightboxCounter();
     document.body.style.overflow = 'hidden';
     trapFocus(lightbox);
+
+    // Reset zoom
+    lightboxImg.style.transform = 'scale(1)';
+    lightboxImg.style.transition = 'transform 0.3s ease';
+
+    // Preload adjacent images
+    preloadAdjacentImages();
 
     // Track view
     fetch('/api/analytics/view', {
@@ -901,6 +1091,10 @@
     releaseFocus(lightbox);
     lightbox.hidden = true;
     document.body.style.overflow = '';
+    lightboxZoom = 1;
+    lightboxPanX = 0;
+    lightboxPanY = 0;
+    lightboxImg.style.transform = 'scale(1)';
   }
 
   function navigateLightbox(dir) {
@@ -919,15 +1113,122 @@
       lightboxName.textContent = next.name;
       lightboxDesc.textContent = next.description || '';
       lightboxImg.classList.remove('transitioning');
+
+      // Reset zoom
+      lightboxZoom = 1;
+      lightboxPanX = 0;
+      lightboxPanY = 0;
+      lightboxImg.style.transform = 'scale(1)';
+
       updateLightboxCounter();
+      updateLightboxProgress();
+      updateLightboxInfoPanel(next);
+      preloadAdjacentImages();
     }, 250);
   }
 
+  function updateLightboxProgress() {
+    const progressBar = document.querySelector('.lightbox-progress-bar');
+    if (progressBar && filteredImages.length > 1) {
+      const progress = ((lightboxIndex + 1) / filteredImages.length) * 100;
+      progressBar.style.width = `${progress}%`;
+    }
+  }
+
+  function updateLightboxInfoPanel(img) {
+    const panel = document.querySelector('.lightbox-info-panel');
+    if (panel) {
+      const collectionEl = panel.querySelector('.info-collection');
+      const descEl = panel.querySelector('.info-description');
+      const priceEl = panel.querySelector('.info-price');
+      if (collectionEl) collectionEl.textContent = img.collection || '';
+      if (descEl) descEl.textContent = img.description || '';
+      if (priceEl) priceEl.textContent = img.price ? formatPrice(img.price) : '';
+    }
+  }
+
+  function preloadAdjacentImages() {
+    const prevIdx = lightboxIndex > 0 ? lightboxIndex - 1 : filteredImages.length - 1;
+    const nextIdx = lightboxIndex < filteredImages.length - 1 ? lightboxIndex + 1 : 0;
+
+    [prevIdx, nextIdx].forEach((idx) => {
+      const img = filteredImages[idx];
+      if (img) {
+        const preload = new Image();
+        preload.src = img.thumbUrl || img.url;
+      }
+    });
+  }
+
+  // Zoom functionality
+  function handleLightboxZoom(e) {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.2 : 0.2;
+    lightboxZoom = Math.min(MAX_ZOOM, Math.max(1, lightboxZoom + delta));
+    lightboxImg.style.transform = `scale(${lightboxZoom}) translate(${lightboxPanX}px, ${lightboxPanY}px)`;
+  }
+
+  // Swipe functionality for lightbox
+  let lightboxTouchStartX = 0;
+  let lightboxTouchStartY = 0;
+
+  function handleLightboxTouchStart(e) {
+    if (lightboxZoom > 1) return;
+    lightboxTouchStartX = e.touches[0].clientX;
+    lightboxTouchStartY = e.touches[0].clientY;
+  }
+
+  function handleLightboxTouchEnd(e) {
+    if (lightboxZoom > 1) return;
+    const diffX = lightboxTouchStartX - e.changedTouches[0].clientX;
+    const diffY = lightboxTouchStartY - e.changedTouches[0].clientY;
+
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+      navigateLightbox(diffX > 0 ? 1 : -1);
+    }
+  }
+
+  // Double-tap to zoom
+  let lastTap = 0;
+  function handleLightboxDoubleTap(e) {
+    const now = Date.now();
+    if (now - lastTap < 300) {
+      e.preventDefault();
+      lightboxZoom = lightboxZoom > 1 ? 1 : 2;
+      lightboxImg.style.transform = `scale(${lightboxZoom})`;
+    }
+    lastTap = now;
+  }
+
+  // Info panel toggle
+  function toggleLightboxInfoPanel() {
+    const panel = document.querySelector('.lightbox-info-panel');
+    if (panel) {
+      lightboxInfoPanelOpen = !lightboxInfoPanelOpen;
+      panel.classList.toggle('open', lightboxInfoPanelOpen);
+    }
+  }
+
+  // Bind lightbox events
   lightboxClose.addEventListener('click', closeLightbox);
   lightboxPrev.addEventListener('click', () => navigateLightbox(-1));
   lightboxNext.addEventListener('click', () => navigateLightbox(1));
   lightbox.addEventListener('click', (e) => {
     if (e.target === lightbox) closeLightbox();
+  });
+
+  // Zoom, swipe, double-tap events
+  lightbox.addEventListener('wheel', handleLightboxZoom, { passive: false });
+  lightbox.addEventListener('touchstart', handleLightboxTouchStart, { passive: true });
+  lightbox.addEventListener('touchend', handleLightboxTouchEnd, { passive: true });
+  lightbox.addEventListener('touchend', handleLightboxDoubleTap, { passive: true });
+
+  // Info panel toggle button
+  document.addEventListener('DOMContentLoaded', () => {
+    const infoToggle = document.querySelector('.lightbox-info-toggle');
+    if (infoToggle) {
+      infoToggle.addEventListener('click', toggleLightboxInfoPanel);
+    }
   });
 
   // ── Upload ────────────────────────────────────────────────────────────
@@ -964,13 +1265,11 @@
 
     pendingFiles = accepted;
     uploadPreview.innerHTML = accepted
-      .map(
-        (f) => {
-          const sizeKB = (f.size / 1024).toFixed(1);
-          const sizeStr = sizeKB >= 1024 ? (sizeKB / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
-          return `<div class="upload-preview-item"><img src="${URL.createObjectURL(f)}" alt="${f.name}" /><span class="upload-file-size">${sizeStr}</span></div>`;
-        }
-      )
+      .map((f) => {
+        const sizeKB = (f.size / 1024).toFixed(1);
+        const sizeStr = sizeKB >= 1024 ? (sizeKB / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+        return `<div class="upload-preview-item"><img src="${URL.createObjectURL(f)}" alt="${f.name}" /><span class="upload-file-size">${sizeStr}</span></div>`;
+      })
       .join('');
     uploadPreview.hidden = false;
     btnUploadConfirm.disabled = false;
@@ -1156,14 +1455,19 @@
     const perPage = parseInt(pdfPerPage.value, 10);
     const template = getSelectedTemplate();
 
-    const templateNames = { catalog: 'Catalogo', 'line-sheet': 'Linea de Productos', lookbook: 'Libro de Looks' };
+    const templateNames = {
+      catalog: 'Catalogo',
+      'line-sheet': 'Linea de Productos',
+      lookbook: 'Libro de Looks',
+    };
     pdfPreviewTemplate.textContent = templateNames[template] || template;
     pdfPreviewCols.textContent = cols;
     pdfPreviewPpp.textContent = perPage;
 
     pdfPreviewGrid.setAttribute('data-cols', cols);
-    pdfPreviewGrid.innerHTML = Array.from({ length: perPage }, () =>
-      '<div class="pdf-preview-cell"></div>'
+    pdfPreviewGrid.innerHTML = Array.from(
+      { length: perPage },
+      () => '<div class="pdf-preview-cell"></div>'
     ).join('');
   }
 
@@ -1236,19 +1540,6 @@
     }, 1000);
   });
   sortSelect.addEventListener('change', applyFiltersAndSort);
-
-  // ── Newsletter ──────────────────────────────────────────────────────
-  const newsletterForm = document.getElementById('newsletter-form');
-  if (newsletterForm) {
-    newsletterForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const input = newsletterForm.querySelector('.footer-newsletter-input');
-      if (input && input.value.trim()) {
-        showToast('Gracias por suscribirse');
-        input.value = '';
-      }
-    });
-  }
 
   // ── Initial Load ─────────────────────────────────────────────────────
   loadCatalog();

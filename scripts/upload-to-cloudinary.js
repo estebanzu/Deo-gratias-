@@ -15,9 +15,7 @@ function getBaseProductName(filename) {
 }
 
 function cleanProductName(baseName) {
-  return baseName
-    .replace(/[-_]+/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return baseName.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 async function main() {

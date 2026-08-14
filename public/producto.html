@@ -1,133 +1,159 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" data-theme="dark">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#e8b84b" />
-  <title>Producto — Deo Gratias</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/fonts.css" />
-  <link rel="stylesheet" href="/css/style.css" />
-  <link rel="stylesheet" href="/css/product.css" />
-</head>
-<body>
-
-  <!-- ── Header ─────────────────────────────────────────────────────── -->
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="/" class="brand-mark">
-        <span class="brand-name">Deo Gratias</span>
-        <span class="brand-tagline">Joyeria Fina</span>
-      </a>
-      <nav class="header-actions">
-        <a href="/" class="btn btn-ghost magnetic-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span>Volver al Catalogo</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e8b84b" />
+    <title>Producto — Deo Gratias</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/product.css" />
+  </head>
+  <body>
+    <!-- ── Header ─────────────────────────────────────────────────────── -->
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="/" class="brand-mark">
+          <span class="brand-name">Deo Gratias</span>
+          <span class="brand-tagline">Joyeria Fina</span>
         </a>
-      </nav>
-    </div>
-  </header>
-
-  <!-- ── Product Detail ─────────────────────────────────────────────── -->
-  <main class="product-detail" id="product-detail">
-    <div class="product-detail-loading">
-      <div class="loader"></div>
-      <p>Cargando producto...</p>
-    </div>
-  </main>
-
-  <!-- ── Footer ─────────────────────────────────────────────────────── -->
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <div class="footer-brand">Deo Gratias</div>
-      <div class="footer-divider-row">
-        <div class="footer-gold-line"></div>
-        <div class="footer-diamond">&#9670;</div>
-        <div class="footer-gold-line"></div>
+        <nav class="header-actions">
+          <a href="/" class="btn btn-ghost magnetic-btn">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span>Volver al Catalogo</span>
+          </a>
+        </nav>
       </div>
-      <p class="footer-copy">&copy; 2026 Deo Gratias. Todos los derechos reservados.</p>
-    </div>
-  </footer>
+    </header>
 
-  <script>
-    const WHATSAPP_PHONE = '50688830657';
-    let currentImageIndex = 0;
-    let productImages = [];
+    <!-- ── Product Detail ─────────────────────────────────────────────── -->
+    <main class="product-detail" id="product-detail">
+      <div class="product-detail-loading">
+        <div class="loader"></div>
+        <p>Cargando producto...</p>
+      </div>
+    </main>
 
-    function whatsappUrl(productName) {
-      const msg = encodeURIComponent(`Hola, me interesa esta pieza: ${productName}`);
-      return `https://wa.me/${WHATSAPP_PHONE}?text=${msg}`;
-    }
+    <!-- ── Footer ─────────────────────────────────────────────────────── -->
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">Deo Gratias</div>
+        <div class="footer-divider-row">
+          <div class="footer-gold-line"></div>
+          <div class="footer-diamond">&#9670;</div>
+          <div class="footer-gold-line"></div>
+        </div>
+        <p class="footer-copy">&copy; 2026 Deo Gratias. Todos los derechos reservados.</p>
+      </div>
+    </footer>
 
-    function changeImage(index) {
-      currentImageIndex = index;
-      const mainImg = document.getElementById('product-main-image');
-      if (mainImg && productImages[index]) {
-        mainImg.src = productImages[index].url;
+    <script>
+      const WHATSAPP_PHONE = '50688830657';
+      let currentImageIndex = 0;
+      let productImages = [];
+
+      function whatsappUrl(productName) {
+        const msg = encodeURIComponent(
+          `Me interesa la pieza ${productName}, quiero saber el precio`
+        );
+        return `https://wa.me/${WHATSAPP_PHONE}?text=${msg}`;
       }
-      // Update thumbnail active state
-      document.querySelectorAll('.gallery-thumb').forEach((thumb, i) => {
-        thumb.classList.toggle('active', i === index);
-      });
-    }
 
-    function nextImage() {
-      changeImage((currentImageIndex + 1) % productImages.length);
-    }
+      function changeImage(index) {
+        currentImageIndex = index;
+        const mainImg = document.getElementById('product-main-image');
+        if (mainImg && productImages[index]) {
+          mainImg.src = productImages[index].url;
+        }
+        // Update thumbnail active state
+        document.querySelectorAll('.gallery-thumb').forEach((thumb, i) => {
+          thumb.classList.toggle('active', i === index);
+        });
+      }
 
-    function prevImage() {
-      changeImage((currentImageIndex - 1 + productImages.length) % productImages.length);
-    }
+      function nextImage() {
+        changeImage((currentImageIndex + 1) % productImages.length);
+      }
 
-    async function loadProduct() {
-      const container = document.getElementById('product-detail');
-      const productId = decodeURIComponent(window.location.pathname.split('/').pop());
+      function prevImage() {
+        changeImage((currentImageIndex - 1 + productImages.length) % productImages.length);
+      }
 
-      try {
-        const res = await fetch(`/api/images?limit=200`);
-        const data = await res.json();
-        const product = data.images.find(img => img.id === productId);
+      async function loadProduct() {
+        const container = document.getElementById('product-detail');
+        const productId = decodeURIComponent(window.location.pathname.split('/').pop());
 
-        if (!product) {
-          container.innerHTML = `
+        try {
+          const res = await fetch(`/api/images?limit=200`);
+          const data = await res.json();
+          const product = data.images.find((img) => img.id === productId);
+
+          if (!product) {
+            container.innerHTML = `
             <div class="product-not-found">
               <h2>Producto no encontrado</h2>
               <p>El producto que busca no existe.</p>
               <a href="/" class="btn btn-gold">Volver al Catalogo</a>
             </div>`;
-          return;
-        }
+            return;
+          }
 
-        document.title = `${product.name} — Deo Gratias`;
-        productImages = product.images || [];
+          document.title = `${product.name} — Deo Gratias`;
+          productImages = product.images || [];
 
-        const hasMultiple = productImages.length > 1;
+          const hasMultiple = productImages.length > 1;
 
-        container.innerHTML = `
+          container.innerHTML = `
           <div class="product-detail-grid">
             <div class="product-detail-gallery">
               <div class="product-detail-image">
                 <img id="product-main-image" src="${productImages[0].url}" alt="${product.name}" />
-                ${hasMultiple ? `
+                ${
+                  hasMultiple
+                    ? `
                   <button class="gallery-nav gallery-prev" onclick="prevImage()">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                   </button>
                   <button class="gallery-nav gallery-next" onclick="nextImage()">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                   </button>
-                ` : ''}
+                `
+                    : ''
+                }
               </div>
-              ${hasMultiple ? `
+              ${
+                hasMultiple
+                  ? `
                 <div class="gallery-thumbs">
-                  ${productImages.map((img, i) => `
+                  ${productImages
+                    .map(
+                      (img, i) => `
                     <button class="gallery-thumb ${i === 0 ? 'active' : ''}" onclick="changeImage(${i})">
                       <img src="${img.thumbUrl || img.url}" alt="${product.name} ${i + 1}" />
                     </button>
-                  `).join('')}
+                  `
+                    )
+                    .join('')}
                 </div>
-              ` : ''}
+              `
+                  : ''
+              }
             </div>
             <div class="product-detail-info">
               <div class="product-detail-breadcrumb">
@@ -145,33 +171,53 @@
               ${hasMultiple ? `<p class="product-detail-images-count">${productImages.length} imagenes disponibles</p>` : ''}
 
               <div class="product-detail-meta">
-                ${product.collection ? `
+                ${
+                  product.collection
+                    ? `
                   <div class="meta-row">
                     <span class="meta-label">Coleccion</span>
                     <span class="meta-value">${product.collection}</span>
-                  </div>` : ''}
-                ${product.category ? `
+                  </div>`
+                    : ''
+                }
+                ${
+                  product.category
+                    ? `
                   <div class="meta-row">
                     <span class="meta-label">Categoria</span>
                     <span class="meta-value">${product.category}</span>
-                  </div>` : ''}
-                ${product.material ? `
+                  </div>`
+                    : ''
+                }
+                ${
+                  product.material
+                    ? `
                   <div class="meta-row">
                     <span class="meta-label">Material</span>
                     <span class="meta-value">${product.material}</span>
-                  </div>` : ''}
-                ${product.gemstone ? `
+                  </div>`
+                    : ''
+                }
+                ${
+                  product.gemstone
+                    ? `
                   <div class="meta-row">
                     <span class="meta-label">Gema</span>
                     <span class="meta-value">${product.gemstone}</span>
-                  </div>` : ''}
+                  </div>`
+                    : ''
+                }
               </div>
 
-              ${product.description ? `
+              ${
+                product.description
+                  ? `
                 <div class="product-detail-divider"></div>
                 <div class="product-detail-description">
                   <p>${product.description}</p>
-                </div>` : ''}
+                </div>`
+                  : ''
+              }
 
               <div class="product-detail-actions">
                 <a href="${whatsappUrl(product.name)}" target="_blank" rel="noopener" class="btn-whatsapp">
@@ -182,23 +228,23 @@
             </div>
           </div>`;
 
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-          if (!hasMultiple) return;
-          if (e.key === 'ArrowLeft') prevImage();
-          if (e.key === 'ArrowRight') nextImage();
-        });
-      } catch (err) {
-        container.innerHTML = `
+          // Keyboard navigation
+          document.addEventListener('keydown', (e) => {
+            if (!hasMultiple) return;
+            if (e.key === 'ArrowLeft') prevImage();
+            if (e.key === 'ArrowRight') nextImage();
+          });
+        } catch (err) {
+          container.innerHTML = `
           <div class="product-not-found">
             <h2>Error al cargar</h2>
             <p>Intente nuevamente.</p>
             <a href="/" class="btn btn-gold">Volver al Catalogo</a>
           </div>`;
+        }
       }
-    }
 
-    loadProduct();
-  </script>
-</body>
+      loadProduct();
+    </script>
+  </body>
 </html>

@@ -90,26 +90,26 @@
 
 ## Test Coverage Plan
 
-| Phase | Tests |
-|-------|-------|
-| Phase 10 | Auth flows, role enforcement, session management |
-| Phase 11 | Inline editing, bulk operations, image editing |
-| Phase 12 | Collection CRUD, presets, comparison |
-| Phase 13 | Export formats, email, webhooks |
-| Phase 14 | Analytics tracking, dashboard data |
-| Phase 15 | PWA offline, service worker, touch gestures |
-| Phase 16 | Database queries, CDN integration, WebSockets |
-| Phase 17 | Translation loading, RTL layout, currency |
+| Phase    | Tests                                             |
+| -------- | ------------------------------------------------- |
+| Phase 10 | Auth flows, role enforcement, session management  |
+| Phase 11 | Inline editing, bulk operations, image editing    |
+| Phase 12 | Collection CRUD, presets, comparison              |
+| Phase 13 | Export formats, email, webhooks                   |
+| Phase 14 | Analytics tracking, dashboard data                |
+| Phase 15 | PWA offline, service worker, touch gestures       |
+| Phase 16 | Database queries, CDN integration, WebSockets     |
+| Phase 17 | Translation loading, RTL layout, currency         |
 | Phase 18 | Security headers, input validation, audit logging |
 
 ## Tech Stack (Additions)
 
-| Layer | New Technology |
-|-------|---------------|
-| Auth | bcrypt, jsonwebtoken, express-rate-limit |
-| Database | PostgreSQL + Prisma (Phase 16) |
-| Realtime | Socket.io (Phase 16) |
-| PWA | Workbox (Phase 15) |
-| i18n | next-intl or custom (Phase 17) |
-| Email | Nodemailer (Phase 13) |
-| Analytics | Custom + Chart.js (Phase 14) |
+| Layer     | New Technology                           |
+| --------- | ---------------------------------------- |
+| Auth      | bcrypt, jsonwebtoken, express-rate-limit |
+| Database  | PostgreSQL + Prisma (Phase 16)           |
+| Realtime  | Socket.io (Phase 16)                     |
+| PWA       | Workbox (Phase 15)                       |
+| i18n      | next-intl or custom (Phase 17)           |
+| Email     | Nodemailer (Phase 13)                    |
+| Analytics | Custom + Chart.js (Phase 14)             |

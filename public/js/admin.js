@@ -360,6 +360,69 @@
     }
   }
 
+  // ── Duplicates Detection ───────────────────────────────────────
+  const btnScanDuplicates = document.getElementById('btn-scan-duplicates');
+  const duplicatesStatus = document.getElementById('duplicates-status');
+  const duplicatesList = document.getElementById('duplicates-list');
+  const duplicatesCount = document.getElementById('duplicates-count');
+
+  btnScanDuplicates.addEventListener('click', scanDuplicates);
+
+  async function scanDuplicates() {
+    duplicatesStatus.hidden = false;
+    duplicatesList.innerHTML = '';
+    duplicatesCount.textContent = '';
+    btnScanDuplicates.disabled = true;
+
+    try {
+      const res = await fetch('/api/duplicates', { headers: getAuthHeaders() });
+      const data = await res.json();
+
+      duplicatesStatus.hidden = true;
+      btnScanDuplicates.disabled = false;
+
+      if (!data.duplicates || data.duplicates.length === 0) {
+        duplicatesList.innerHTML =
+          '<p class="duplicates-empty">No se encontraron imagenes similares.</p>';
+        duplicatesCount.textContent = '0 grupos';
+        return;
+      }
+
+      duplicatesCount.textContent =
+        data.duplicates.length + ' grupo' + (data.duplicates.length > 1 ? 's' : '');
+      renderDuplicates(data.duplicates);
+    } catch {
+      duplicatesStatus.hidden = true;
+      btnScanDuplicates.disabled = false;
+      showToast('Error al escanear duplicados');
+    }
+  }
+
+  function renderDuplicates(groups) {
+    duplicatesList.innerHTML = groups
+      .map(
+        (group, i) => `
+        <div class="duplicate-group">
+          <div class="duplicate-header">
+            <span class="duplicate-similarity">${group.similarity}% similar</span>
+            <span class="duplicate-count">${group.images.length} imagenes</span>
+          </div>
+          <div class="duplicate-images">
+            ${group.images
+              .map(
+                (img) => `
+              <div class="duplicate-image-card">
+                <img src="${img.url}" alt="${img.name}" loading="lazy" />
+                <span class="duplicate-image-name">${img.name}</span>
+              </div>`
+              )
+              .join('')}
+          </div>
+        </div>`
+      )
+      .join('');
+  }
+
   // ── Scroll Progress ─────────────────────────────────────────────
   const scrollProgress = document.getElementById('scroll-progress');
   window.addEventListener(
