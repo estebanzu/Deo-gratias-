@@ -788,7 +788,7 @@
     mosaicGrid.innerHTML = pageImages
       .map(
         (img, idx) => `
-        <div class="mosaic-item" data-index="${idx}" onclick="openLightbox(${idx})">
+        <div class="mosaic-item" data-index="${idx}">
           <img src="${img.thumbUrl || img.url}" alt="${img.name}" loading="lazy" decoding="async" />
           <div class="mosaic-item-overlay">
             <h3>${img.name}</h3>
@@ -799,6 +799,11 @@
       )
       .join('');
   }
+
+  mosaicGrid.addEventListener('click', (e) => {
+    const item = e.target.closest('.mosaic-item');
+    if (item) openLightbox(parseInt(item.dataset.index, 10));
+  });
 
   // ── Format Price ─────────────────────────────────────────────────────
   function formatPrice(price) {
