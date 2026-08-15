@@ -400,7 +400,7 @@
 
     try {
       await loadFavorites();
-      const res = await fetch('/api/images?limit=200');
+      const res = await fetch('/api/images?limit=50');
       const data = await res.json();
       allImages = data.images || [];
       images = allImages;
