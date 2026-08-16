@@ -4,6 +4,12 @@ dev:
 	@echo "Starting local dev server..."
 	npm run dev
 
+start:
+	@echo "Starting local server (node server.js)..."
+	node server.js
+
+run: start
+
 deploy:
 	@echo "Deploying to Vercel..."
 	@if [ -f .env ]; then \
