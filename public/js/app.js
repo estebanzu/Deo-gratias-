@@ -400,7 +400,7 @@
 
     try {
       await loadFavorites();
-      const res = await fetch('/api/images?limit=50');
+      const res = await fetch('/api/images?limit=24');
       const data = await res.json();
       allImages = data.images || [];
       images = allImages;
@@ -830,7 +830,7 @@
     const productUrl = `/producto/${encodeURIComponent(img.id)}`;
     const imageCount = img.images ? img.images.length : 1;
     return `
-      <a href="${productUrl}" class="product-card-link">
+      <div class="product-card-link">
         <div class="product-card${isFav ? ' favorited' : ''}" data-index="${idx}" data-id="${img.id}" data-url="${productUrl}">
           <div class="product-select" aria-label="Seleccionar ${img.name}"></div>
           <button class="product-fav" aria-label="Alternar favorito" data-fav="${img.id}">
@@ -855,7 +855,7 @@
             ${buildCardMeta(img)}
           </div>
         </div>
-      </a>`;
+      </div>`;
   }
 
   function buildCardMeta(img) {

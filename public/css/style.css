@@ -1460,7 +1460,6 @@ body.theme-transitioning::before {
     box-shadow var(--duration-normal) var(--ease-default);
   pointer-events: none;
   padding: 0;
-  position: relative;
 }
 
 .back-to-top:focus-visible {

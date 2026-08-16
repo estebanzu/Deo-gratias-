@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deo-gratias-v2';
+const CACHE_NAME = 'deo-gratias-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
